@@ -1,7 +1,7 @@
 ---
 title: Text and Typography
 author: detectivecrow
-date: 2000-01-01 11:45:00 +0800
+date: 2000-01-01 11:45:00 +0900
 categories: [Template]
 tags: [typography, template]
 math: true
@@ -11,6 +11,8 @@ image:
   width: 800
   height: 500
   alt: Responsive rendering of Chirpy theme on multiple devices.
+---
+
 ---
 
 This post is to show Markdown syntax rendering on [**Chirpy**](https://github.com/cotes2020/jekyll-theme-chirpy/fork), you can also use it as an example of writing. Now, let's start looking at text and typography.

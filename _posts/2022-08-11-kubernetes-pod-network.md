@@ -1,11 +1,12 @@
 ---
 title: Kubernetes Pod Network
 author: detectivecrow
-date: 2022-08-11 21:55:00 +0800
+date: 2022-08-11 21:55:00 +0900
 categories: [Kubernetes]
 tags: [kubernetes, network]
 ---
 
+---
 # 개요
 
 쿠버네티스의 네트워크는 컨테이너의 네트워크를 기반으로 구성되어 있습니다. 따라서 docker와 비슷한데, 완전히 같지는 않고 차이점들이 존재합니다. 이번에는 컨테이너의 네트워킹을 이해하고 그것을 넓혀서 쿠버네티스의 파드 네트워킹을 이해해 보고자 합니다.

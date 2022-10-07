@@ -36,6 +36,7 @@ More Examples:
 
 - `add`: (add new post)
 - `edit`: (edit old post)
+- `fix`: (fix setting issues)
 - `update`: (update page scripts or framework)
 - `test`: (adding missing tests, refactoring tests; no production code change)
 - `chore`: (updating grunt tasks etc; no production code change)

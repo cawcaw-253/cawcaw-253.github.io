@@ -13,9 +13,9 @@ tags: [kubernetes, network]
 
 # Docker의 네트워킹
 
-![[https://docs.docker.com/engine/tutorials/networkingcontainers/](https://docs.docker.com/engine/tutorials/networkingcontainers/)](/posts/20221007/01_docker_networking_1.png)
+![[https://docs.docker.com/engine/tutorials/networkingcontainers/](https://docs.docker.com/engine/tutorials/networkingcontainers/)](/posts/20220811/01_docker_networking_1.png)
 
-![docker_networking_2.png](/posts/20221007/02_docker_networking_2.png)
+![docker_networking_2.png](/posts/20220811/02_docker_networking_2.png)
 
 위의 그림은 도커의 기본적인 `bridge` 타입 네트워크의 구조입니다.
 
@@ -29,7 +29,7 @@ tags: [kubernetes, network]
 
 여기서 어떻게 파드는 가상 네트워크 인터페이스를 공유할까요?  바로 pause 컨테이너의 존재 덕분입니다.
 
-![03_pod_network_interface](/posts/20221007/03_pod_network_interface.png)
+![03_pod_network_interface](/posts/20220811/03_pod_network_interface.png)
 
 [https://medium.com/google-cloud/understanding-kubernetes-networking-pods-7117dd28727](https://medium.com/google-cloud/understanding-kubernetes-networking-pods-7117dd28727)
 
@@ -44,13 +44,13 @@ tags: [kubernetes, network]
 
 기본적으로 쿠버네티스는 kubenet이라는 네트워크 플러그인을 제공해줍니다. 하지만 이 플러그인은 `노드간 네트워킹` 이나 `네트워크 정책설정` 과 같은 기능이 구현되어 있지 않아 CNI 플러그인을 따로 사용해 통신을 돕습니다.
 
-![단일 노드에서의 Pod간 통신](/posts/20221007/04_pod_networking_single_node.png)
+![단일 노드에서의 Pod간 통신](/posts/20220811/04_pod_networking_single_node.png)
 
 단일 노드에서의 Pod간 통신
 
 CNI 플러그인을 사용하면 위의 그림과 같이 각 파드가 고유한 IP를 가지게 되고 이를 통해서 각 파드는 CNI를 통하여 고유한 IP 주소로 통신할 수 있게 됩니다.
 
-![멀티 노드에서의 Pod간 통신](/posts/20221007/05_pod_networking_multi_node.png)
+![멀티 노드에서의 Pod간 통신](/posts/20220811/05_pod_networking_multi_node.png)
 
 멀티 노드에서의 Pod간 통신
 
@@ -73,7 +73,7 @@ refer to : [https://github.com/containernetworking/cni#what-is-cni](https://gith
 
 ## 왜 CNI 플러그인이 필요한가
 
-![06_why_cni_plugin_1.png](/posts/20221007/06_why_cni_plugin_1.png)
+![06_why_cni_plugin_1.png](/posts/20220811/06_why_cni_plugin_1.png)
 
 위 그림과 같이 UI Container, Login Container, Cart Container등의 컨테이너 기반 애플리케이션이 멀티 호스트 구성으로 동작한다고 가정합니다.
 
@@ -83,7 +83,7 @@ refer to : [https://github.com/containernetworking/cni#what-is-cni](https://gith
 
 이러한 멀티 호스트 환경에서 컨테이너간의 통신을 하기 위해서는 CNI 플러그인이 필수적으로 필요하게 됩니다.
 
-![07_why_cni_plugin_2.png](/posts/20221007/07_why_cni_plugin_2.png)
+![07_why_cni_plugin_2.png](/posts/20220811/07_why_cni_plugin_2.png)
 
 CNI 플러그인은 위처럼 **Overlay Network를 구성**하고 **컨테이너 네트워크 대역대를 나눠주며**, **라우팅 테이블을 생성**하여 한 컨테이너가 다른 컨테이너로 통신하는데 문제가 없도록 도와줍니다.
 
@@ -104,9 +104,9 @@ CNI 플러그인들은 본질적 기능인 컨테이너 및 노드간의 통신�
 
 오버레이 네트워크의 목적은 실제로 복잡할 수 있는 엔드포인트 간의 네트워크 구조를 추상화하여 네트워크의 통신 경로를 단순화 하는 것입니다.
 
-![08_overlay_network_1.png](/posts/20221007/08_overlay_network_1.png)
+![08_overlay_network_1.png](/posts/20220811/08_overlay_network_1.png)
 
-![09_overlay_network_2.png](/posts/20221007/09_overlay_network_2.png)
+![09_overlay_network_2.png](/posts/20220811/09_overlay_network_2.png)
 
 이 모델은 기존 레이어 3 위에 구축된 네트워크 간에 있는 엔드포인트의 노드간 통신이 일어날 때 패킷을 캡슐화하여 레이어 2 (같은 LAN) 에서 통신이 일어나는 것처럼 통신할 수 있도록 해줍니다.
 
@@ -117,7 +117,7 @@ CNI 플러그인들은 본질적 기능인 컨테이너 및 노드간의 통신�
 3. 캡슐화 된 패킷을 생성한 가상 Tunnel의 Endpoint를 통해 전달
 - **여기서 이러한 처리를 위해 라우팅 테이블처럼 사용되는 것이 바로 key value 스토어인 ETCD 입니다.**
 
-![10_encapsulated_network.png](/posts/20221007/10_encapsulated_network.png)
+![10_encapsulated_network.png](/posts/20220811/10_encapsulated_network.png)
 
 Overlay Network를 사용하면 거의 대부분의 환경에서 기존 네트워크 환경에 영향 없이 CNI 환경을 구성할 수 있지만, Unencapsulated Network 방식에 비해 캡슐화 할 때 CPU 등의 자원도 소모하고 패킷 당 송수신 할 수 있는 데이터의 양이 줄어들어 상대적으로 비효율 적인 단점이 있습니다.
 

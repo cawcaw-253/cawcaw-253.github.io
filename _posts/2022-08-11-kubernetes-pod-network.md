@@ -1,5 +1,5 @@
 ---
-title: Kubernetes Pod Network
+title: ! '[Kubernetes Deep Dive] 쿠버네티스 네트워크'
 author: detectivecrow
 date: 2022-08-11 21:55:00 +0900
 categories: [Kubernetes]
@@ -7,11 +7,13 @@ tags: [kubernetes, network]
 ---
 
 ---
-# 개요
+# 쿠버네티스 내부에서는 어떻게 통신이 이루어질까?
 
-쿠버네티스의 네트워크는 컨테이너의 네트워크를 기반으로 구성되어 있습니다. 따라서 docker와 비슷한데, 완전히 같지는 않고 차이점들이 존재합니다. 이번에는 컨테이너의 네트워킹을 이해하고 그것을 넓혀서 쿠버네티스의 파드 네트워킹을 이해해 보고자 합니다.
+쿠버네티스를 구축하고 운용하며 자연스럽게 파드를 띄우고 서비스를 생성하면 통신이 가능해진다라고만 인식을 하고 있었습니다. 그러다가 문득 어떻게 파드 간의 통신이 이루어지는지, 외부에서 접속했을 때는 어떻게 파드로 전달되는지 등에 대해서 궁금증이 생겼고 쿠버네티스의 파드 네트워킹에 대해서 공부를 해보았습니다. 이 글에서는 제가 공부하며 이해했던 내용들을 정리하고 설명해보도록 하려고 합니다.
 
 # Docker의 네트워킹
+
+우선 도커의 네트워크 구성을 통해서 컨테이너의 네트워크에 대해서 알아보도록 하겠습니다.
 
 ![[https://docs.docker.com/engine/tutorials/networkingcontainers/](https://docs.docker.com/engine/tutorials/networkingcontainers/)](/posts/20220811/01_docker_networking_1.png)
 

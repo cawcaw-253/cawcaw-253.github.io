@@ -7,10 +7,7 @@ tags: [devops, infrastructure]
 ---
 
 ---
-> 📢 본 글은 **[DevOps Concepts: Pets vs. Cattle](https://iamondemand.com/blog/devops-concepts-pets-vs-cattle/#:~:text=Servers%20in%20on%2Dpremises%20data,scratch%20in%20case%20of%20failures.)** 의 내용을 공부하며 번역한 글입니다.
-{: .prompt-info }
-
-# Pets vs Cattle
+# Pets vs Cattle 이란 무엇을 의미할까?
 
 클라우드 컴퓨팅이 발전함에 따라, 비즈니스는 그들의 어플리케이션과 고가용성, 빠른 응답시간을 가진 경쟁력있는 서비스를 원하게 되었습니다.
 
@@ -18,7 +15,7 @@ tags: [devops, infrastructure]
 
 그리고 그러한 인프라의 변화를 비유하는 표현으로 Pets vs Cattle(애완동물 대 가축)이라는 문구가 굉장히 유명해졌죠
 
-![ref : [https://traefik.io/blog/pets-vs-cattle-the-future-of-kubernetes-in-2022/](https://traefik.io/blog/pets-vs-cattle-the-future-of-kubernetes-in-2022/) ](/posts/20220815/pets_vs_cattle.png)
+![pets vs cattle](/posts/20220815/pets_vs_cattle.png)
 _ref : [https://traefik.io/blog/pets-vs-cattle-the-future-of-kubernetes-in-2022/](https://traefik.io/blog/pets-vs-cattle-the-future-of-kubernetes-in-2022/)_
 
 > 이 문구에서 기존의 온프레미스 데이터 센터는 일반적으로 “Pets”이며, 클라우드에 존재하는 서버는 “Cattle”입니다.
@@ -28,6 +25,9 @@ Pets(애완동물)는 없어져서는 안되는 서버로 문제가 발생하면
 
 이 글에서는 위와 같은 인프라의 형태를 설명하는 Mutable, Immutable Infrastructure에 대해서 설명하고 어째서 Immutable Infrastructure가 기존의 것을 대체하기 시작하였는지 설명하고자 합니다.
 
+> 📢 본 글은 **[DevOps Concepts: Pets vs. Cattle](https://iamondemand.com/blog/devops-concepts-pets-vs-cattle/#:~:text=Servers%20in%20on%2Dpremises%20data,scratch%20in%20case%20of%20failures.)** 의 내용을 공부하며 번역한 글입니다.
+{: .prompt-info }
+
 ---
 # Mutable vs Immutable Infrastructure
 
@@ -35,7 +35,7 @@ Pets(애완동물)는 없어져서는 안되는 서버로 문제가 발생하면
 
 온프레미스 서버는 삭제할 수 없으며 계속 유지해야 되는 존재로 취급하며, AWS, Azure등과 같은 클라우드 프로바이더가 제공하는 클라우드상에 존재하는 서버는 일시적 혹은 임시로 받은 리소스로 취급합니다.
 
-![Mutable vs Immutable architecture](/posts/20220815/mutable_immutable.png)
+![가변적, 불변적 아키텍처](/posts/20220815/mutable_immutable.png)
 _Mutable vs Immutable architecture_
 
 ## Mutable Infrastructure

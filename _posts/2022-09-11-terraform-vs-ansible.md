@@ -7,7 +7,7 @@ tags: [devops, infrastructure as code]
 ---
 
 ---
-# 개요
+# Terraform과 Ansible 무엇이 더 좋을까?
 
 베어메탈, 클라우드, VM 등의 다양한 환경에서 쿠버네티스 환경 구축을 자동화하는 방법을 고민하던 중, Terraform, Ansible 등 다양한 Iac가 눈에 들어와 조금씩 조사해 보게 되었습니다.
 이 글에서는 위의 툴 중, 대표적으로 비교되는 Terraform과 Ansible이 각자 어떠한 특징이 있는지, 또 어떤 작업에 무엇이 더 적절한지 파악해보고자 합니다.

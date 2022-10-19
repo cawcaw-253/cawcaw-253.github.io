@@ -1,5 +1,5 @@
 ---
-title: ! '[Kubernetes Deep Dive] 기본 아키텍처 파헤치기'
+title: ! '[Kubernetes Deep Dive] 쿠버네티스의 아키텍처'
 author: detectivecrow
 date: 2022-10-13 21:24:00 +0900
 categories: [Kubernetes]
@@ -7,7 +7,7 @@ tags: [devops, kubernetes]
 ---
 
 ---
-# 쿠버네티스는 어떻게 구성되어 있을까?
+# 쿠버네티스는 어떻게 구성되어 있나
 
 우리가 어떠한 툴이나 프레임워크를 사용하고자 할 때, 사용할 것의 구조나 원리를 잘 파악하고 있으면 생산성 및 트러블슈팅 등에 크게 도움이 될 것입니다.
 

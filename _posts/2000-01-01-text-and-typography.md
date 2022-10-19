@@ -4,6 +4,7 @@ author: detectivecrow
 date: 2000-01-01 11:45:00 +0900
 categories: [Template]
 tags: [typography, template]
+published: false
 math: true
 mermaid: true
 image:

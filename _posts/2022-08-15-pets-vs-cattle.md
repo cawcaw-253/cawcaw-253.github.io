@@ -7,7 +7,7 @@ tags: [devops, infrastructure]
 ---
 
 ---
-# Pets vs Cattle 이란 무엇을 의미할까?
+# Pets vs Cattle 이란?
 
 클라우드 컴퓨팅이 발전함에 따라, 비즈니스는 그들의 어플리케이션과 고가용성, 빠른 응답시간을 가진 경쟁력있는 서비스를 원하게 되었습니다.
 

@@ -1,9 +1,9 @@
 ---
-title: ! '[Kubernetes Deep Dive] 쿠버네티스란?'
+title: ! '[Kubernetes Basic] 쿠버네티스란?'
 author: detectivecrow
 date: 2022-10-19 22:26:00 +0900
 categories: [Kubernetes]
-tags: [devops, kubernetes]
+tags: [devops, kubernetes, basic]
 ---
 
 ---

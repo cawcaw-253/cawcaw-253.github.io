@@ -3,7 +3,7 @@ title: ! '[Kubernetes Deep Dive] 쿠버네티스 네트워크'
 author: detectivecrow
 date: 2022-08-11 21:55:00 +0900
 categories: [Kubernetes]
-tags: [kubernetes, network]
+tags: [kubernetes, network, deep-dive]
 ---
 
 ---

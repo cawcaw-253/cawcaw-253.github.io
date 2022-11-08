@@ -1,10 +1,15 @@
 # How to run locally
 
-```
-cd detectivecrow-blog
+## with install
 
+```
 bundle install
 bundle exec jekyll serve
+```
+
+## with docker-compose
+```
+docker-compose up
 ```
 
 # Jekyll theme

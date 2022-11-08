@@ -1,9 +1,9 @@
 ---
-title: ! '[Kubernetes Deep Dive] 쿠버네티스의 아키텍처'
+title: ! '[Kubernetes Basic] 쿠버네티스의 아키텍처'
 author: detectivecrow
 date: 2022-10-20 21:24:00 +0900
 categories: [Kubernetes]
-tags: [devops, kubernetes]
+tags: [devops, kubernetes, basic]
 ---
 
 ---

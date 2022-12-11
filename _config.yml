@@ -21,12 +21,12 @@ timezone: Asia/Seoul
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: DetectiveCrow                          # the main title
+title: cawcaw253                   # the main title
 
 tagline: DevOps engineer's tech blog   # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
-  detectivecrow, devops blog, kubernetes, terraform
+   kubernetes, k8s, terraform, devops, aws, detectivecrow, cawcaw253
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
 url: 'https://blog.cawcaw253.com'
@@ -41,7 +41,7 @@ social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
   name: HoSeong Lee
-  email: detectivecrow2540@gmail.com             # change to your email address
+  email: cawcaw253@gmail.com             # change to your email address
   links:
     # The first element serves as the copyright owner's link
     - https://twitter.com/username      # change to your twitter homepage

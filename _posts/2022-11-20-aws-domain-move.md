@@ -1,6 +1,6 @@
 ---
 title: ! '[AWS] DNS 변경을 이용한 다운타임 없는 인프라 마이그레이션'
-author: detectivecrow
+author: cawcaw253
 date: 2022-11-20 20:13:00 +0900
 categories: [AWS]
 tags: [aws]
@@ -9,7 +9,7 @@ tags: [aws]
 ---
 # 다운타임 없이 프로덕션 환경 마이그레이션
 
-![Server Migration](/posts/20221120/server-transfer.png)
+![Server Migration](posts/20221120/server-transfer.png)
 _ref : [https://icon-icons.com/icon/server-transfer-migration/116623](https://icon-icons.com/icon/server-transfer-migration/116623)_
 
 프로젝트를 진행하다 보면 한 계정에서 다른 aws 계정으로 이동하거나 도메인 밑의 인프라 전체를 새롭게 교체해야 되는 경우가 발생할 수 있습니다.
@@ -30,7 +30,7 @@ _ref : [https://icon-icons.com/icon/server-transfer-migration/116623](https://ic
 
 ## 전파시간
 
-![DNS Propagation](/posts/20221120/dns-propagation.jpg)
+![DNS Propagation](posts/20221120/dns-propagation.jpg)
 _ref : [https://www.xeonbd.com/blog/dns-propagation-take-long/](https://www.xeonbd.com/blog/dns-propagation-take-long/)_
 
 첫째로 전파시간입니다.
@@ -66,36 +66,36 @@ _ref : [https://www.xeonbd.com/blog/dns-propagation-take-long/](https://www.xeon
 
 그 계획은 **<ins>다른 계정에서 기존 환경과 동일한 환경을 구성한 뒤, 도메인의 네임 서버 값을 새로운 hosted zone의 네임 서버 값으로 변경</ins>**하는 것으로, 전파시간 동안은 두 환경 모두에게 요청이 갈 수 있지만 전파가 완료된 뒤<ins>(대략 72시간)</ins>에는 새로 만들어진 환경으로 모든 요청이 가게 될 것입니다.
 
-![Migration Plan 001](/posts/20221120/plan_001.png)
+![Migration Plan 001](posts/20221120/plan_001.png)
 _1. 동일한 환경 구성_
 
-![Migration Plan 002](/posts/20221120/plan_002.png)
+![Migration Plan 002](posts/20221120/plan_002.png)
 _2. 도메인의 네임 서버 값을 새로 만들어진 hosted zone의 네임 서버 값으로 변경_
 
-![Migration Plan 003](/posts/20221120/plan_003.png)
+![Migration Plan 003](posts/20221120/plan_003.png)
 _3. 전파시간(72시간)이 지난 후, 트래픽의 흐름_
 
 ## 서브 도메인의 sub-delegation 작업
 
 하지만 한 가지 문제점이 존재했었습니다. 바로 기존의 개발 환경이 옮겨지지 않는다는 점이었죠.
 
-![Problem 001](/posts/20221120/problem_001.png)
+![Problem 001](posts/20221120/problem_001.png)
 _기존의 개발 환경이 hosted zone에 포함되어있음_
 
 요구사항이 개발환경은 기존 계정에 그대로 있어야 된다는 것이었기에 도메인의 네임 서버 값을 바꾸는 것만으로는 부족했습니다.
 
 물론 새로 생성한 NEW hosted zone에도 개발환경의 레코드를 추가한다면 해결될 일이지만 개발환경의 IaC에서 프로덕션의 리소스를 수정하는 것은 바람직하지 않다고 생각되어 다른 방법을 생각하게 되었습니다.
 
-그렇게 고민하다가 나온 방법이 Sub Delegation을 이용한 방법으로 아래의 다이어그램처럼 `dev.detectivecrow.co.kr`의 hosted zone을 생성한 다음, 각 hosted zone에 추가하는 것으로 개발환경 또한 다운타임 없이 마이그레이션이 가능해집니다.
+그렇게 고민하다가 나온 방법이 Sub Delegation을 이용한 방법으로 아래의 다이어그램처럼 `dev.cawcaw253.co.kr`의 hosted zone을 생성한 다음, 각 hosted zone에 추가하는 것으로 개발환경 또한 다운타임 없이 마이그레이션이 가능해집니다.
 
-![Problem 002](/posts/20221120/problem_002.png)
+![Problem 002](posts/20221120/problem_002.png)
 _Sub Delegation을 이용하여 두 hosted zone에서 바라보게 함_
 
 ## 만약 데이터 정합성을 고려한다면
 
 처음에 저의 경우 데이터 정합성은 백엔드에서 처리해주기로 했다고 했는데요, 만약 추가적으로 데이터 정합성을 고려한다면 어떻게 했으면 좋았을지 아이디어를 공유해보고자 합니다.
 
-![데이터 정합성](/posts/20221120/improve_001.png)
+![데이터 정합성](posts/20221120/improve_001.png)
 _기존의 데이터베이스를 새로운 환경에서도 가리키도록 변경_
 
 방법은 단순합니다. 새로 만들어진 환경에서 기존의 데이터베이스를 가리키게 하고 전파시간이 지난 뒤 데이터베이스를 새로운 환경으로 변경하는 작업을 진행하는 것입니다.
@@ -122,7 +122,7 @@ _기존의 데이터베이스를 새로운 환경에서도 가리키도록 변�
     #   "Password": "!&awd223cfg"
     # }
     ```
-    ![도메인 이전 신청](/posts/20221120/domain_transfer_001.png)
+    ![도메인 이전 신청](posts/20221120/domain_transfer_001.png)
     _다른 계정으로 도메인 이전 신청_
 
 2. 도메인을 받고자 하는 계정으로 `AcceptDomainTransferFromAnotherAwsAccount`[^AcceptDomainTransferFromAnotherAwsAccountAPI] API에 이전에 `TransferDomainToAnotherAwsAccount` API에서 리스폰스로 받았던 Password를 입력하여 도메인을 가져옵니다.
@@ -134,7 +134,7 @@ _기존의 데이터베이스를 새로운 환경에서도 가리키도록 변�
     #   "OperationId": "test-operation-id-testtest321"
     # }
     ```
-    ![도메인 이전 수락](/posts/20221120/domain_transfer_002.png)
+    ![도메인 이전 수락](posts/20221120/domain_transfer_002.png)
     _도메인을 받으려는 계정으로 도메인 이전 신청을 수락_
 
 위의 과정을 진행하면 다운타임 없이 도메인을 이전할 수 있습니다.

@@ -1,6 +1,6 @@
 ---
 title: ! '컨테이너란 무엇인가'
-author: detectivecrow
+author: cawcaw253
 date: 2022-12-15 20:13:00 +0900
 categories: [Container, Docker]
 tags: [container]
@@ -26,7 +26,7 @@ tags: [container]
 
 그럼 Linux 컨테이너 기술은 어떠한 기술일까요? 해당 내용을 살펴보면 컨테이너가 무엇인지 더 잘 이해할 수 있을 것입니다.
 
-![Linux Kernel](/posts/20221215/linux_kernel.png){: style="max-width: 75%" }
+![Linux Kernel](posts/20221215/linux_kernel.png){: style="max-width: 75%" }
 
 리눅스는 기본적으로 물리적 자원을 관리하는 **커널 공간**과 사용자 프로세스(어플리케이션)를 실행하는 **사용자 공간**으로 나뉩니다.
 
@@ -79,10 +79,10 @@ tags: [container]
 
 # 기존 VM과의 차이점
 
-![Virtual machines vs Containers](/posts/20221215/vm_vs_container.png)
+![Virtual machines vs Containers](posts/20221215/vm_vs_container.png)
 _ref : [https://www.atlassian.com/microservices/cloud-computing/containers-vs-vms](https://www.atlassian.com/microservices/cloud-computing/containers-vs-vms)_
 
-![Virtual machines vs Containers (Kernel)](/posts/20221215/vm_vs_container_kernel.png){: style="max-width: 50%" }
+![Virtual machines vs Containers (Kernel)](posts/20221215/vm_vs_container_kernel.png){: style="max-width: 50%" }
 
 대표적으로 컨테이너와 가상 머신의 차이점을 보여주는 그림입니다. 
 
@@ -97,7 +97,7 @@ _ref : [https://www.atlassian.com/microservices/cloud-computing/containers-vs-vm
 # 도커의 컨테이너 격리 확인
 
 1. 우선 아래의 명령어로 `sleep 1d` 커맨드를 실행하는 컨테이너를 실행하고, ps 커맨드를 통해서 컨테이너 안의 프로세스 리스트를 확인합니다.
-  ![Run simple container](/posts/20221215/explain_0.jpeg)
+  ![Run simple container](posts/20221215/explain_0.jpeg)
 
     ```sh
     # 테스트 컨테이너 1 실행
@@ -108,7 +108,7 @@ _ref : [https://www.atlassian.com/microservices/cloud-computing/containers-vs-vm
     ```
 
 2. 그리고 `sleep 999d` 커맨드를 실행하는 두번째 컨테이너를 실행하고, 마찬가지로 컨테이너 안의 프로세스 리스트를 확인합니다.
-  ![Run simple container](/posts/20221215/explain_1.jpeg)
+  ![Run simple container](posts/20221215/explain_1.jpeg)
   
     ```sh
     # 테스트 컨테이너 2 실행
@@ -119,7 +119,7 @@ _ref : [https://www.atlassian.com/microservices/cloud-computing/containers-vs-vm
     ```
 
 3. 이제 호스트에서 프로세스 리스트를 확인해봅니다.
-  ![Run simple container](/posts/20221215/explain_2.jpeg)
+  ![Run simple container](posts/20221215/explain_2.jpeg)
 
     ```sh
     # sleep 을 실행중인 프로세스 리스트를 확인
@@ -128,7 +128,7 @@ _ref : [https://www.atlassian.com/microservices/cloud-computing/containers-vs-vm
     ```
 
 4. 여기서 기존 테스트 컨테이너 2를 지우고, pid 옵션으로 기존 컨테이너와 네임스페이스를 공유하게 해주고 다시 컨테이너의 프로세스 리스트를 확인해봅니다. 
-  ![Run simple container](/posts/20221215/explain_3.jpeg)
+  ![Run simple container](posts/20221215/explain_3.jpeg)
   
     ```sh
     # 테스트 컨테이너 1과 네임스페이스를 공유하는 컨테이너 2를 생성합니다.

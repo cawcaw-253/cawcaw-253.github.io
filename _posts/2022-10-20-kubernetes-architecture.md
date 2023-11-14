@@ -1,6 +1,6 @@
 ---
 title: ! '[Kubernetes Basic] 쿠버네티스의 아키텍처'
-author: detectivecrow
+author: cawcaw253
 date: 2022-10-20 21:24:00 +0900
 categories: [Kubernetes]
 tags: [devops, kubernetes, basic]
@@ -24,14 +24,14 @@ tags: [devops, kubernetes, basic]
 
 본 글에서는 쿠버네티스 클러스터를 동작시키기 위해서 필요한 다양한 컴포넌트들에 대해 배와 항구의 모습으로 비유하여 전체적인 구조를 설명하고, 요소 하나하나를 정리해보고자 합니다.
 
-![쿠버네티스 구조](/posts/20221020/kubernetes-model-architecture.png)
+![쿠버네티스 구조](posts/20221020/kubernetes-model-architecture.png)
 _ref : [https://phoenixnap.com/kb/understanding-kubernetes-architecture-diagrams](https://phoenixnap.com/kb/understanding-kubernetes-architecture-diagrams)_
 
 ## 마스터 노드와 워커 노드
 
 아래에 두 종류의 선박이 존재합니다. 하나는 화물선(Cargo ships)으로 실질적으로 여러 컨테이너들을 싣고 운용하는 선박이고, 다른 하나는 운용선(Control ships)으로 화물선들에 대한 관리와 모니터링에 의무를 가지고 있는 선박입니다.
 
-![마스터 노드, 워커 노드](/posts/20221020/master-worker-node.png){: style="max-width: 70%"}
+![마스터 노드, 워커 노드](posts/20221020/master-worker-node.png){: style="max-width: 70%"}
 _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노드의 역할을 하는 화물선 (Cargo ships)_
 
 - **워커 노드**는 여러 어플리케이션을 컨테이너 형태로 호스트하는 노드로 실질적으로 어플리케이션이 동작하는 노드입니다.
@@ -49,7 +49,7 @@ _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노�
 
 - **etcd**는 key-value 형식의 데이터베이스로 클러스터 관리에 필요한 정보들을 보존하고 있습니다.
 
-![etcd 클러스터](/posts/20221020/etcd-cluster.png){: style="max-width: 70%"}
+![etcd 클러스터](posts/20221020/etcd-cluster.png){: style="max-width: 70%"}
 
 ## kube-scheduler
 
@@ -58,7 +58,7 @@ _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노�
 
 - **kube-scheduler**는 이처럼 컨테이너의 리소스 요구량, 워커 노드의 공간, taint, tolerations, node affinity 등과 같은 정책과 제약 등을 확인하여 실행하기 적절한 노드인지 판단하는 역할을 합니다.
 
-![kube 스케줄러](/posts/20221020/kube-scheduler.png){: style="max-width: 70%"}
+![kube 스케줄러](posts/20221020/kube-scheduler.png){: style="max-width: 70%"}
 
 ## kube-controller-manager
 
@@ -81,7 +81,7 @@ _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노�
 | endpoint controller                | 엔드포인트 오브젝트를 채웁니다.(서비스와 파드를 연결시킵니다.)                     |
 | service account & token controller | 새로운 네임스페이스에 대한 기본 계정과 API 접근 토큰을 생성합니다.                 |
 
-![컨트롤러 매니저](/posts/20221020/controller-manager.png){: style="max-width: 70%"}
+![컨트롤러 매니저](posts/20221020/controller-manager.png){: style="max-width: 70%"}
 
 > **컨트롤러란?** API 서버를 통해 클러스터의 상태를 감시하고, 현재 상태를 원하는 상태로 이행시키는 컨트롤 루프를 뜻합니다.
 {: .prompt-info }
@@ -95,7 +95,7 @@ _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노�
 
 **kube-apiserver**는 쿠버네티스의 주된 관리 컴포넌트로 클러스터의 모든 동작을 오케스트레이팅하는 역할을 하며, 외부에서 관리자가 관리 작업을 할 수 있도록 Kubernetes API를 외부로 노출시킵니다.
 
-![kube api서버](/posts/20221020/kube-apiserver.png){: style="max-width: 70%"}
+![kube api서버](posts/20221020/kube-apiserver.png){: style="max-width: 70%"}
 
 # 노드 컴포넌트
 
@@ -109,7 +109,7 @@ _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노�
 - 쿠버네티스에서는 **kubelet**이 이러한 역할을 합니다. **kubelet**은 클러스터내의 각 노드에서 동작하는 에이전트로, kube-apiserver로부터의 명령을 듣고 필요하다면 노드에 컨테이너를 생성하고 제거합니다.
 - kube-apiserver는 주기적으로 **kubelet**으로부터 노드와 컨테이너의 상태를 보고 받아 모니터링 합니다.
 
-![kubelet](/posts/20221020/kubelet.png){: style="max-width: 70%"}
+![kubelet](posts/20221020/kubelet.png){: style="max-width: 70%"}
 
 ## kube-proxy
 
@@ -119,7 +119,7 @@ _마스터 노드의 역할을 하는 운용선 (Control ships) 과 워커 노�
 
 kube-proxy는 노드에 존재하는 컨테이너가 다른 노드에 있는 컨테이너로 통신할 수 있도록 노드에 필요한 네트워크 규칙들을 보장해주는 역할을 합니다.
 
-+ 좀 더 깊게 들어가 CNI와 kube-proxy의 관계에 대해서 보고자 한다면 아래의 링크나 저의 다른 글인 [[Kubernetes Deep Dive] 쿠버네티스 네트워크](https://detectivecrow.github.io/posts/kubernetes-pod-network/)를 참고하면 좋을 것 같습니다.
++ 좀 더 깊게 들어가 CNI와 kube-proxy의 관계에 대해서 보고자 한다면 아래의 링크나 저의 다른 글인 [[Kubernetes Deep Dive] 쿠버네티스 네트워크](https://cawcaw253.github.io/posts/kubernetes-pod-network/)를 참고하면 좋을 것 같습니다.
 
 [https://stackoverflow.com/questions/53534553/kubernetes-cni-vs-kube-proxy](https://stackoverflow.com/questions/53534553/kubernetes-cni-vs-kube-proxy) 
 
@@ -129,7 +129,7 @@ kube-proxy는 노드에 존재하는 컨테이너가 다른 노드에 있는 컨
 
 - 대표적인 예시는 도커이며 그 외에도 로켓이나 크라이오 등 다양한 CRI(Container Runtime Interface) 규격을 만족시키는 컨테이너 런타임 엔진이 존재합니다.
 
-![컨테이너 런타임](/posts/20221020/container-runtime-engine.png){: style="max-width: 70%"}
+![컨테이너 런타임](posts/20221020/container-runtime-engine.png){: style="max-width: 70%"}
 
 # 정리
 

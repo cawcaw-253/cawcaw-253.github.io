@@ -26,13 +26,13 @@ title: cawcaw253                   # the main title
 tagline: DevOps engineer's tech blog   # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
-   kubernetes, k8s, terraform, devops, aws, detectivecrow, cawcaw253
+   kubernetes, k8s, terraform, devops, aws, cawcaw253, cawcaw253
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
 url: 'https://blog.cawcaw253.com'
 
 github:
-  username: detectivecrow             # change to your github username
+  username: cawcaw253             # change to your github username
 
 twitter:
   username: twitter_username            # change to your twitter username
@@ -45,7 +45,7 @@ social:
   links:
     # The first element serves as the copyright owner's link
     - https://twitter.com/username      # change to your twitter homepage
-    - https://github.com/detectivecrow       # change to your github homepage
+    - https://github.com/cawcaw253       # change to your github homepage
     # Uncomment below to add more social links
     # - https://www.facebook.com/username
     # - https://www.linkedin.com/in/username

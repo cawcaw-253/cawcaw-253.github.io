@@ -1,6 +1,6 @@
 ---
 title: ! 'git은 어떻게 동작할까? | git 톺아보기'
-author: detectivecrow
+author: cawcaw253
 date: 2023-03-17 18:43:00 +0900
 categories: [git]
 tags: [git, advanced]
@@ -198,10 +198,10 @@ new file:   menu.txt
 new file:   recipes/README.txt
 new file:   recipes/apple_pie.txt
 
-  ~/lhs/git-test   main +3 ❯ git config user.email "[detectivecrow2540@gmail.com](mailto:detectivecrow2540@gmail.com)""                                       base
+  ~/lhs/git-test   main +3 ❯ git config user.email "[cawcaw253@gmail.com](mailto:cawcaw253@gmail.com)""                                       base
 dquote>
-  ~/lhs/git-test   main +3 ❯ git config user.email "[detectivecrow2540@gmail.com](mailto:detectivecrow2540@gmail.com)"                                 ✘ INT  base
-  ~/lhs/git-test   main +3 ❯ git config [user.name](http://user.name/) "detectivecrow2540"                                                   base
+  ~/lhs/git-test   main +3 ❯ git config user.email "[cawcaw253@gmail.com](mailto:cawcaw253@gmail.com)"                                 ✘ INT  base
+  ~/lhs/git-test   main +3 ❯ git config [user.name](http://user.name/) "cawcaw253"                                                   base
   ~/lhs/git-test   main +3 ❯ git commit -m "First commit"                                                               base
 [main (root-commit) c0ccc7d] First commit
 3 files changed, 3 insertions(+)
@@ -216,8 +216,8 @@ nothing to commit, working tree clean
   ~/lhs/git-test   main ❯ git log                                                                                       base
   ~/lhs/git-test   main ❯ git cat-file -p c0ccc7d82f06884c4ddcc54220c2a3cf8e13c703                                      base
 tree 887ac3823f18a2b27c56dcff64fb7cce662da5fc
-author detectivecrow2540 [detectivecrow2540@gmail.com](mailto:detectivecrow2540@gmail.com) 1677733681 +0900
-committer detectivecrow2540 [detectivecrow2540@gmail.com](mailto:detectivecrow2540@gmail.com) 1677733681 +0900
+author cawcaw253 [cawcaw253@gmail.com](mailto:cawcaw253@gmail.com) 1677733681 +0900
+committer cawcaw253 [cawcaw253@gmail.com](mailto:cawcaw253@gmail.com) 1677733681 +0900
 
 First commit
   ~/lhs/git-test   main ❯ git cat-file -p 887ac3823f18a2b27c56dcff64fb7cce662da5fc                                      base
@@ -247,13 +247,13 @@ git branch 명령어를 실행해보면 기본적으로 사용하는 main 브랜
 ```bash
 > git log
 commit d13ae2d03b3c3e49fa043b2e7ec0935c7335918a (HEAD -> main)
-Author: detectivecrow2540 <detectivecrow2540@gmail.com>
+Author: cawcaw253 <cawcaw253@gmail.com>
 Date:   Thu Mar 2 14:59:36 2023 +0900
 
     Add more cake
 
 commit c0ccc7d82f06884c4ddcc54220c2a3cf8e13c703
-Author: detectivecrow2540 <detectivecrow2540@gmail.com>
+Author: cawcaw253 <cawcaw253@gmail.com>
 Date:   Thu Mar 2 14:08:01 2023 +0900
 
     First commit

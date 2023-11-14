@@ -35,7 +35,7 @@ Pets(애완동물)는 없어져서는 안되는 서버로 문제가 발생하면
 
 온프레미스 서버는 삭제할 수 없으며 계속 유지해야 되는 존재로 취급하며, AWS, Azure등과 같은 클라우드 프로바이더가 제공하는 클라우드상에 존재하는 서버는 일시적 혹은 임시로 받은 리소스로 취급합니다.
 
-![가변적, 불변적 아키텍처](/posts/20220815/mutable_immutable.png)
+![가변적, 불변적 아키텍처](posts/20220815/mutable_immutable.png)
 _Mutable vs Immutable architecture_
 
 ## Mutable Infrastructure

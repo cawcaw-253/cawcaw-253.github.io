@@ -1,6 +1,6 @@
 ---
 title: ! '[Kubernetes Basic] 쿠버네티스란?'
-author: detectivecrow
+author: cawcaw253
 date: 2022-10-19 22:26:00 +0900
 categories: [Kubernetes]
 tags: [devops, kubernetes, basic]
@@ -18,7 +18,7 @@ tags: [devops, kubernetes, basic]
 
 # 쿠버네티스까지의 변화
 
-![쿠버네티스까지의 변화](/posts/20221019/container_evolution.svg)
+![쿠버네티스까지의 변화](posts/20221019/container_evolution.svg)
 _ref : [https://kubernetes.io/ko/docs/concepts/overview/what-is-kubernetes/](https://kubernetes.io/ko/docs/concepts/overview/what-is-kubernetes/)_
 
 쿠버네티스라는 플랫폼으로 오기까지 기존의 배포 방식은 위의 그림처럼 다양한 변화를 거쳐왔습니다. 
@@ -40,8 +40,8 @@ _ref : [https://kubernetes.io/ko/docs/concepts/overview/what-is-kubernetes/](htt
 
 2013년 도커가 컨테이너 기술을 본격적으로 퍼뜨리면서 VM에서 컨테이너 기반의 배포 방식으로 많은 변화가 생기게 되었습니다.
 컨테이너는 VM과 유사하지만 격리 속성을 완화하여 애플리케이션 간에 운영체제(OS)를 공유합니다. 또한 컨테이너의 이미지 레이어를 공유하므로 일반적으로 컨테이너는 VM보다 더욱 가볍습니다.
-![VM에서의 애플리케이션](/posts/20221019/vm.png){: style="max-width: 48%" .left}
-![컨테이너에서의 애플리케이션](/posts/20221019/container.png){: style="max-width: 49%" .normal}
+![VM에서의 애플리케이션](posts/20221019/vm.png){: style="max-width: 48%" .left}
+![컨테이너에서의 애플리케이션](posts/20221019/container.png){: style="max-width: 49%" .normal}
 
 또한 컨테이너는 다음과 같은 추가적인 혜택을 제공하기 때문에 인기가 많습니다.
 - 기민한 애플리케이션 생성과 배포: VM 이미지를 사용하는 것에 비해 컨테이너 이미지 생성이 보다 쉽고 효율적임.

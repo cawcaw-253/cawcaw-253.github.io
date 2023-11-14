@@ -1,6 +1,6 @@
 ---
 title: ! 'Git 브랜치 전략 (git workflow)'
-author: detectivecrow
+author: cawcaw253
 date: 2022-07-26 20:34:00 +0900
 categories: [Git]
 tags: [git]
@@ -25,7 +25,7 @@ Vincent Driessen 이라는 사람이 고안한 git을 이용한 버전 관리의
 
 먼저 기본적인 Git Flow입니다.
 
-![git flow](/posts/20220726/git-flow.png)
+![git flow](posts/20220726/git-flow.png)
 
 Git Flow 는 아래와 같이 5개의 브랜치로 이루어져 있습니다.
 
@@ -55,7 +55,7 @@ GitHub Flow는 **Scott chacon**가 Git Flow 는 좋은 방식이지만 GitHub �
 룰이 굉장히 단순하며 `master` 브랜치에 대한 각 브랜치의 `role` 만 정확하다면 다른 브랜치에는 관여를 하지 않습니다.
 그리고 `pull request` 기능을 사용하도록 권장을 합니다.
 
-![github flow](/posts/20220726/github-flow.png)
+![github flow](posts/20220726/github-flow.png)
 
 ## 장/단점
 
@@ -80,7 +80,7 @@ GitHub Flow는 **Scott chacon**가 Git Flow 는 좋은 방식이지만 GitHub �
 브랜치는 `GitHub Flow` 를 베이스로 `production` 브랜치가 추가되어 커밋된 내용들을 배포하는 형태를 가지고 있습니다.
 또한 별도로 `development` 브랜치를 통한 테스트 환경 작성, `pre-production` 혹은 `staging` 브랜치를 통한 스테이징 환경을 만드는 것도 권장됩니다.
 
-![gitlab flow](/posts/20220726/gitlab-flow.png)
+![gitlab flow](posts/20220726/gitlab-flow.png)
 
 # 마치며
 

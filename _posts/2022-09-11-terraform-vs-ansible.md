@@ -1,6 +1,6 @@
 ---
 title: ! 'Terraform vs Ansible 무엇을 사용할까?'
-author: detectivecrow
+author: cawcaw253
 date: 2022-09-11 21:38:00 +0900
 categories: [DevOps, Infrastructure as code]
 tags: [devops, infrastructure as code]

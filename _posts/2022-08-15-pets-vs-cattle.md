@@ -1,6 +1,6 @@
 ---
 title: ! 'DevOps 콘셉트: Pets vs Cattle'
-author: detectivecrow
+author: cawcaw253
 date: 2022-08-15 18:23:00 +0900
 categories: [DevOps, Infrastructure]
 tags: [devops, infrastructure]
@@ -15,7 +15,7 @@ tags: [devops, infrastructure]
 
 그리고 그러한 인프라의 변화를 비유하는 표현으로 Pets vs Cattle(애완동물 대 가축)이라는 문구가 굉장히 유명해졌죠
 
-![pets vs cattle](/posts/20220815/pets_vs_cattle.png)
+![pets vs cattle](posts/20220815/pets_vs_cattle.png)
 _ref : [https://traefik.io/blog/pets-vs-cattle-the-future-of-kubernetes-in-2022/](https://traefik.io/blog/pets-vs-cattle-the-future-of-kubernetes-in-2022/)_
 
 > 이 문구에서 기존의 온프레미스 데이터 센터는 일반적으로 “Pets”이며, 클라우드에 존재하는 서버는 “Cattle”입니다.

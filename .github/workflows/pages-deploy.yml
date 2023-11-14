@@ -46,7 +46,7 @@ jobs:
 
       - name: Update Configs
         working-directory: .
-        run: sed -i 's/http:\/\/127.0.0.1:4000/https:\/\/detectivecrow.github.io/' ./_config.yml
+        run: sed -i 's/http:\/\/127.0.0.1:4000/https:\/\/cawcaw-253.github.io/' ./_config.yml
 
       - name: Build site
         run: bundle exec jekyll b -d "_site${{ steps.pages.outputs.base_path }}"

@@ -80,7 +80,7 @@ theme_mode: light # [light|dark]
 # will be added to all image (site avatar & posts' images) paths starting with '/'
 #
 # e.g. 'https://cdn.com'
-img_cdn: 'http://127.0.0.1:4000/images/' # it will be changed on release as 'https://cawcaw-253.github.io/images/'
+# img_cdn: 'http://127.0.0.1:4000/images/' # it will be changed on release as 'https://cawcaw-253.github.io/images/'
 
 # the avatar on sidebar, support local or CORS resources
 avatar: "/commons/avatar.png"

@@ -10,7 +10,10 @@ published: false
 ---
 # 어쩌다 이런글을...
 
-어느날 회사에서 교육 사이트인 https://app.pluralsight.com/를 이용해 보자고 얘기가 나와서 해당 사이트에서 온라인 강의를 들어볼 기회가 생겼습니다.
+테스트 입니다.
+obsidian test
+
+어느날 회사에서 교육 사이트인 https://app.pluralsight.com 를 이용해 보자고 얘기가 나와서 해당 사이트에서 온라인 강의를 들어볼 기회가 생겼습니다.
 처음엔 Hands On 관련된 강의가 많아 보여서 이론적인 것들을 좋아하는 저에게는 잘 맞지 않는다는 생각을 했었습니다.
 그러다가 우연히 `How Git Works`(https://app.pluralsight.com/library/courses/how-git-works/table-of-contents)라는 강의를 스쳐 지나가듯 보게 되었고, 문득 나는 git이 뭔지 잘 알고 사용하고 있었나 라는 생각이 들었습니다...
 

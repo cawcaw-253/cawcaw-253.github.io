@@ -48,35 +48,15 @@ kube-proxy는 Service IP 주소를 해당 Service에 속한 Pod의 IP 주소에 
 
 # Kube-Proxy는 어떻게 동작하는가
 
-Kube-Proxy가 설치되면 API Server와 인증을 설정합니다.
+Kube-Proxy가 설치되면 API Server와 인증을 설정합니다. 그리고  새로운 Service나 Endpoint(Pod IP)가 생성 및 삭제 되었을때, 이러한 변경 사항을 API Server로부터 전달받습니다.
 
-kube-proxy는 쿠버네티스에 새로운 Service나 Endpoint(Pod IP)가 생성 및 삭제 되었을때, 이러한 변경 사항을 API Server로부터 전달받아 네트워크 룰로 변환하여 Service-Pod 간의 매핑을 해줍니다.
+그러고 kube-proxy는 이러한 변경사항을 Node의 <ins>**NAT**</ins> 룰로 적용시킵니다. 이 NAT 룰은 단순히 Service IP와 Pod IP를 매핑해 줍니다.
+Service를 대상으로 요청이 왔을때, 이 룰이 백엔드 Pod로 Redirect 해줍니다.
 
-동작 방식을 조금 더 풀어서 설명해보자면 다음과 같습니다.
-
-
-
-이 컴포넌트는 각 노드에서 동작하며 일반적으로 DaemonSet 형태로 실행됩니다. 
-kube-proxy는 Service object와 그 endpoint의 변화를 모니터링하고 있으며, 변경이 발생했을 경우 노드 내부의 실제 네트워크 룰로 변환시킵니다. 
-
-이 노드 내부의 네트워크 룰이란 NAT를 의미하는데 kube-proxy는 변경사항을 내부 iptables의 NAT 규칙으로 적용시켜 단순히 Service IP를 Pod IP에 매핑시키는 것입니다. 
-
-따라서 특정 Service IP에 대한 패킷은 Linux의 netfilter기능을 통해서 iptables의 규칙을 기반으로 Pod IP로 리디렉션 되는 것입니다. 
+예시와 함께 조금 더 자세히 설명해 보도록 하겠습니다.
 
 
-그러면 간단하게 Service가 어떻게 동작하는지 알아보았으니 Service의 대표적인 세 타입 Cluster IP, NodePort, LoadBalancer에 대해서 그림과 예시를 통해 자세하게 설명해 보도록 하겠습니다.
 
-# Cluster IP
-
-> 서비스를 클러스터-내부 IP에 노출시킨다. 이 값을 선택하면 클러스터 내에서만 서비스에 도달할 수 있다. 이것은 서비스의 `type`을 명시적으로 지정하지 않았을 때의 기본값이다.
-> 
-> ref : https://kubernetes.io/ko/docs/concepts/services-networking/service/#publishing-services-service-types
-
-Cluster IP 방식은 가장 기본적인 방식으로 클러스터 내부에서 해당 service 
-## Single Node
-
-
-## Multi Node
 
 
 

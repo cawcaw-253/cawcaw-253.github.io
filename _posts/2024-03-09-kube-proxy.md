@@ -108,15 +108,16 @@ IPtables는 lookup시에 순차적으로 규칙을 조회합니다. 이는 O(n) 
 IPVS는 로드밸런싱을 위해 특별히 설계된 Linux 커널의 기능입니다. 이 모드에서는 Kube-Proxy가 IPtables 대신 IPVS에 규칙을 추가합니다.
 
 IPVS는 O(1)의 복잡도를 가진 알고리즘을 가지고 있습니다. 즉, 규칙의 수와 상관없이 일정한 성능을 제공합니다.
-
 또한 라운드 로빈, 최소 연결 및 기타 부하 분산 알고리즘도 지원합니다.
+
+더 자세히 성능을 비교한 내용은 [iptables-or-ipvs](https://www.tigera.io/blog/comparing-kube-proxy-modes-iptables-or-ipvs/) 에서 확인할 수 있습니다.
 
 하지만 아직 모든 Linux 시스템에서 제공되고 있지는 않습니다. 그리고 만약 Service의 수가 많지 않다면 IPtables 방식 또한 잘 동작하기에 반드시 써야되는 방식은 아닙니다.
 
 # Reference
 - [[Kubernetes Deep Dive] 쿠버네티스 네트워크](https://blog.cawcaw253.com/posts/kubernetes-pod-network/)
 - [kube-proxy](https://kodekloud.com/blog/kube-proxy/)
-- [how-kube-proxy-works](https://kodekloud.com/blog/kube-proxy/#how-kube-proxy-works)
+- [iptables-or-ipvs](https://www.tigera.io/blog/comparing-kube-proxy-modes-iptables-or-ipvs/)
 - [introduction-cni](https://kube.academy/courses/kubernetes-in-depth/lessons/an-introduction-to-cni)
 - [Kube-Proxy and CNI: The Hidden Components of Kubernetes Networking](https://medium.com/@seifeddinerajhi/kube-proxy-and-cni-the-hidden-components-of-kubernetes-networking-eb30000bf87a)
 - [Endpoint란](https://yoo11052.tistory.com/193)

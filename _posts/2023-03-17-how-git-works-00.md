@@ -10,7 +10,7 @@ published: false
 ---
 # 어쩌다 이런글을...
 
-어느날 회사에서 교육 사이트인 https://app.pluralsight.com/를 이용해 보자고 얘기가 나와서 해당 사이트에서 온라인 강의를 들어볼 기회가 생겼습니다.
+어느날 회사에서 교육 사이트인 https://app.pluralsight.com 를 이용해 보자고 얘기가 나와서 해당 사이트에서 온라인 강의를 들어볼 기회가 생겼습니다.
 처음엔 Hands On 관련된 강의가 많아 보여서 이론적인 것들을 좋아하는 저에게는 잘 맞지 않는다는 생각을 했었습니다.
 그러다가 우연히 `How Git Works`(https://app.pluralsight.com/library/courses/how-git-works/table-of-contents)라는 강의를 스쳐 지나가듯 보게 되었고, 문득 나는 git이 뭔지 잘 알고 사용하고 있었나 라는 생각이 들었습니다...
 
@@ -20,7 +20,7 @@ published: false
 
 혹시라도 위의 내용을 읽으면서 뜨끔 하셨던 분들은 대충이라도 괜찮으니 간단하게 읽어봐 주시면 감사할것 같습니다 :)
 
-# 개요
+# Overview
 
 Porcelain Commands
 
@@ -60,69 +60,21 @@ Plumbing Commands
 Git의 정말 기본적이고 코어한 부분을 본다면 Persistent Map 이라고 볼 수 있습니다.
 즉 Git은 디스크에 저장되는 단순한 Key와 Value의 Map 입니다.
 
-
-
-
-
-======================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
-
-How Git Works
-
-Porcelain Commands
-
-- git add
-- git commit
-- git push
-- git pull
-- git branch
-- git switch
-- git merge
-- git rebase
-- ...
-
-Plumbing Commands
-
-- git cat-file
-- git hash-object
-- git count-object
-- ...
-
-깃을 마스터 하고싶다면 커맨드를 공부하지마라, 모델을 공부해라!!
-
-========================
-
-깃을 레이어라고 생각하고 단순화하여 이해를 도와보겠습니다.
-
-1. Git Is... a Distributed Revision Control System
-좀 더 간단하게 분산된 시스템에서의 관리가 아니라 한 대의 컴퓨터에서만 동작한다고 생각해 봅시다.
-2. a Revision Control System
-여전히 복잡합니다... 개정 관리 시스템은 History, branch, merge 등의 다양한 기능들이 존재합니다.
-조금 더 단순화 해보면 어떨까요?
-3. a Stupid Content Tracker
-훨씬 간단해졌습니다. 깃이 실제로 하는 일은 결국 콘텐츠를 추적하는 것입니다. 파일이나 폴더등을 말이죠.
-실제로 `man git` 커맨드로 Git의 매뉴얼을 본다면 Git이 자신을 설명하고 있는 문구입니다.
-여기서 트래킹, 커밋의 개념, 버저닝을 신경쓰지 말고 한번 더 단순화해서 보도록 해봅시다.
-4. a Persistent Map
-Git의 정말 기본적이고 코어한 부분을 본다면 Persistent Map 이라고 볼 수 있습니다.
-즉 Git은 디스크에 저장되는 단순한 Key와 Value의 Map 입니다.
-
-===========================
-
-a Persistent Map
+## a Persistent Map
 
 ```
-	- Values and Keys
-		- Values : Any sequence of bytes
-		- Keys : SHA1 hash
+- Values and Keys
+	- Values : Any sequence of bytes
+	- Keys : SHA1 hash
 
-		"Apple Pie" -> "23991897e13e47ed0adb91a0082c31c82fe0cbe5"
+"Apple Pie" -> "23991897e13e47ed0adb91a0082c31c82fe0cbe5"
 
-		echo "Apple Pie" | git hash-object --stdin 명령어로 확인할 수 있습니다.
+echo "Apple Pie" | git hash-object --stdin 명령어로 확인할 수 있습니다.
 
-	- Every object in Git has its own SHA1.
-	So, what if they collide?
-
-	확률이 굉장히 낮으므로 무시해도 괜찮습니다.
+- Every object in Git has its own SHA1.
+  So, what if they collide?
+  
+  -> 확률이 굉장히 낮으므로 무시해도 괜찮습니다.
 
 ```
 
@@ -135,57 +87,57 @@ Persistant Map 이란?
 
 echo "Apple Pie" | git hash-object --stdin -w 로 쓰기 옵션을 주도록 하겠습니다.
 
-```
-~/lhs/git-test   main ❯ echo "Apple Pie" | git hash-object --stdin -w                                                 base
-23991897e13e47ed0adb91a0082c31c82fe0cbe5
-
-```
-
+![](posts/20230317/20231206154334.png)
 그런뒤 .git/objects로 이동하면 23으로 시작하는 폴더를 확인할 수 있습니다.
-
-```
-~/lhs/git-test   main ❯ cd .git/objects                                                                               base
-~/lhs/git-test/.git/objects   main ❯ ls -la                                                                           base
-
-total 20
-drwxr-xr-x 5 lhs lhs 4096 Mar  2 13:43 .
-drwxr-xr-x 7 lhs lhs 4096 Mar  2 13:42 ..
-drwxr-xr-x 2 lhs lhs 4096 Mar  2 13:43 23
-drwxr-xr-x 2 lhs lhs 4096 Mar  2 13:42 info
-drwxr-xr-x 2 lhs lhs 4096 Mar  2 13:42 pack
-
-~/lhs/git-test/.git/objects   main ❯
-
-```
-
+![[Pasted image 20231206154725.png]]
 여기서 23 폴더의 내용물을 살펴보면 낯익은 문자열을 발견할 수 있을겁니다.
 
-```
-  ~/lhs/git-test/.git/objects/23   main ❯ ls -la                                                                        base
-total 12
-drwxr-xr-x 2 lhs lhs 4096 Mar  2 13:43 .
-drwxr-xr-x 5 lhs lhs 4096 Mar  2 13:43 ..
--r--r--r-- 1 lhs lhs   26 Mar  2 13:48 991897e13e47ed0adb91a0082c31c82fe0cbe5
-  ~/lhs/git-test/.git/objects/23   main ❯
-
-```
-
+![[Pasted image 20231206154817.png]]
 잘 관찰해보면 각각 23과 991897e13e47ed0adb91a0082c31c82fe0cbe5 은 아까 hash-object 커맨드를 통해 만들어진 hash값이라는걸 알 수 있습니다.
 즉 Git은 Hash된 key값의 앞 두 16진수 값을 폴더로 만들고 나머지 값을 파일 이름으로 지정하여 파일을 구조화하고 분산시킵니다.
 이를 통해 한 디렉토리에 파일이 몰리지 않도록 관리하고 blob 형식으로 정보를 저장시킵니다.
 이런 blob 데이터는 파일에 직접 접근하여 볼 수 없습니다만 Plumbing Commands를 이용하면 확인 할 수 있습니다.
 
+![[Pasted image 20231206155121.png]]
+
+## a Stupid Content Tracker
+
+우선은 간단하게 테스트할 수 있는 환경을 만들겠습니다.
+저는 강의를 따라서 아래와 같이 파일들을 생성했습니다.
 ```
-# type 확인
-git cat-file 23991897e13e47ed0adb91a0082c31c82fe0cbe5 -t
-# print
-git cat-file 23991897e13e47ed0adb91a0082c31c82fe0cbe5 -p
+# 구조
+.
+├── menu.txt
+└── recipes
+    ├── README.txt
+    └── apple_pie.txt
 
+# 각각의 파일들은 모두 간략한 텍스트로 작성했습니다.
+
+# menu.txt
+Apple Pie
+
+# recipes/README.md
+이 폴더 안에 레시피를 작성해주세요. (파일당 하나의 레시피)
+
+# recipes/apple_pie.txt
+Apple Pie
 ```
 
-===========================
+여기서 실제로 git이 어떻게 파일들을 보관하고 관리하는지 알아보기 위해서 commit을 만들어 보도록 하겠습니다.
 
-a Stupid Content Tracker
+![[Pasted image 20231206162245.png]]
+자 이제 본격적으로 `.git` 에 저장된 내용을 보면서 어떻게 파일이 관리되고 있는지를 보겠습니다.
+
+우선 `.git/objects` 를 살펴보면 다음과 같이 오브젝트들이 생성된 것을 확인할 수 있습니다.
+
+![[Pasted image 20231206162623.png]]
+여기서 첫번째로 commit부터 살펴보겠습니다.
+기존에 git log를 살펴보면 commit message가 hash값인것을 확인할 수 있는데요 이것을 기존처럼 `cat-file -p` 를 통해서 살펴본다면 다음과 같이 결과물이 나옵니다.
+
+![[Pasted image 20231206163107.png]]
+
+내용을 보면 commit의 내용이 들어있습니다.
 
   ~/lhs/git-test   main +3 ❯ git st                                                                                     base
 On branch main

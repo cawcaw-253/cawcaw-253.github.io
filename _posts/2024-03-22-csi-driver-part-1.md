@@ -17,8 +17,11 @@ tags:
 ---
 # 개요
 
-Kubernetes 클러스터를 생성하고 Helm 차트를 통해 다양한 어플리케이션을 설정하다보면 볼륨에 대한 설정이 항상 등장합니다. 이러한 상황에서 볼륨에 대해서 자세히 모르다보면 이 부분에서 헤메는 경우가 종종 발생하게되죠. 급하게 많이 사용하는 csi-driver 나 longhorn 등을 설치해서 문제를 해결할때가 있습니다.
-본 글에서는 여기서 CSI 는 무엇이고 어떤 동작을 하는지에 대해서 CNI 때와 마찬가지로 알아보도록 하겠습니다.
+Kubernetes 클러스터를 생성하고 Helm 차트를 통해 다양한 애플리케이션을 설정하다 보면 볼륨에 대한 설정이 항상 등장합니다.
+이러한 상황에서 볼륨에 대해서 자세히 모르다 보면 이 부분에서 헤매는 경우가 종종 발생하게 되고 급하게 많이 사용하는 csi-driver 나 longhorn 등을 설치해서 문제를 해결하곤 합니다.
+
+그런데 여기서 csi-driver는 실제로 어떻게 구성되고 동작할까요? 우리는 보통 설치하고 문제없이 동작하는 것을 확인하지만 내부에서 어떤 방식을 이용해서 동작하는지는 문제가 생겼을 때 확인해 보곤 합니다.
+좀 더 자세히 공부해 보자는 의미에서 본 글에선 여기서 CSI는 무엇이고 어떤 구성요소들이 있는지에 대해서 알아보도록 하겠습니다.
 
 # CSI
 
@@ -36,17 +39,17 @@ Kubernetes의 스토리지 관련 기능은 Kubernetes 소스에 직접 내장�
 
 이 CSI는 Kubernetes, Mesos, Docker, CloudFoundry 등 다양한 컨테이너 환경에서 사용할 수 있도록 Kubernetes와 독립적으로 [Container Storage Interface 커뮤니티](https://github.com/container-storage-interface)에서 사양을 수립하고 있습니다.
 
-# CSI Driver에 대한 권장 메커니즘
+# CSI Driver 메커니즘
 
-먼저 전반적으로 CSI 드라이버들이 어떻게 동작하는지 알기 위해서 Kubernetes 에서 권장하는 메커니즘에 대해서 설명하도록 하겠습니다.
+먼저 전반적으로 CSI 드라이버들이 어떻게 동작하는지 알기 위해서 Kubernetes에서 권장하는 메커니즘에 대해서 설명하도록 하겠습니다.
 
 ![container-storage-interface_diagram](posts/20240322/container-storage-interface_diagram.png)
 
-Kubernetes는 3rd party 벤더들이 CSI 볼륨 드라이버를 만들때 다음과 같은 사항을 따르는 것을 권장합니다.
+Kubernetes는 3rd party 벤더들이 CSI 볼륨 드라이버를 만들 때 다음과 같은 사항을 따르는 것을 권장합니다.
 - 볼륨 플러그인 동작을 구현하고 CSI 사양(컨트롤러, 노드 및 신원 서비스 포함)에 정의된 대로 유닉스 도메인 소켓을 통해 gRPC 인터페이스를 노출하는 "<ins>CSI volume driver</ins>" 컨테이너를 만듭니다.
 - "<ins>CSI volume driver</ins>"에 Kubernetes 팀이 지원할 헬퍼 컨테이너를 번들합니다. (external-attacher, external-provisioner, node-driver-registrar, cluster-driver-registrar, external-resizer, external-snapshotter, livenessprobe).
-  이러한 헬퍼 컨테이너는 드라이버가 Kubernetes 시스템과 상호작용 하는것을 돕습니다. 이러한 헬퍼 컨테이너에 대한 자세한 내용은 아래에서 설명하도록 하겠습니다.
-- 클러스터 관리자가 위 다이어그램의 StatefulSet 과 DaemonSet을 배포하여 클러스터에 스토리지 시스템에 대한 지원을 추가하도록 합니다.
+  이러한 헬퍼 컨테이너는 드라이버가 Kubernetes 시스템과 상호작용 하는 것을 돕습니다. 이러한 헬퍼 컨테이너에 대한 자세한 내용은 아래에서 설명하도록 하겠습니다.
+- 클러스터 관리자가 위 다이어그램의 StatefulSet과 DaemonSet을 배포하여 클러스터에 스토리지 시스템에 대한 지원을 추가하도록 합니다.
 
 > 여기서 모든 구성 요소(`external-provisioner` 와 `external-attacher` 를 포함한)를 단일 Pod에 배치하여 배포를 단순화할 수도 있습니다.
 > 하지만 이렇게 구성할 경우, 더 많은 리소스가 소모되고 `external-provisioner` 및 `external-attacher` 구성 요소에 리더 선출 프로토콜(예 : https://github.com/kubernetes-retired/contrib/tree/master/election)이 필요합니다.
@@ -55,10 +58,10 @@ Kubernetes는 3rd party 벤더들이 CSI 볼륨 드라이버를 만들때 다음
 
 ## Controller Component
 
-컨트롤러 플러그인은 `Deployment` 또는 `StatefulSet`으로 배포되며 클러스터 내의 모든 노드에 마운트할 수 있습니다. 이는 CSI Controller 서비스를 구현하는 CSI 드라이버와 사이드카 컨테이너로 구성됩니다.
+컨트롤러 플러그인은 `Deployment` 또는 `StatefulSet`으로 배포되며 클러스터 내의 모든 노드에 마운트 할 수 있습니다. 이는 CSI Controller 서비스를 구현하는 CSI 드라이버와 사이드카 컨테이너로 구성됩니다.
 컨트롤러 사이드카 컨테이너는 일반적으로 쿠버네티스 오브젝트와 상호 작용하고 CSI Controller 서비스를 호출합니다.
 
-컨트롤러는 호스트에 직접 액세스할 필요가 없습니다.(외부 컨트롤 플레인 서비스와 쿠버네티스 API를 통해 모든 작업을 수행할 수 있습니다.)
+컨트롤러는 호스트에 직접 액세스 할 필요가 없습니다.(외부 컨트롤 플레인 서비스와 쿠버네티스 API를 통해 모든 작업을 수행할 수 있습니다.)
 고가용성(HA)을 위해 컨트롤러 구성 요소의 복사본을 여러 개 배포할 수 있지만, 리더 선출을 구현하여 특정 시간에 하나의 컨트롤러만 활성화되도록 해야 합니다.
 ### Sidecar Containers
 
@@ -87,12 +90,13 @@ csi-snapshotter
 csi-resizer
 liveness-probe
 ```
+
 ## Per-node Component
 
 노드 플러그인은 DaemonSet을 통해 클러스터의 모든 노드에 배포해야 합니다. 이는 CSI Node Service를 구현하는 CSI Driver와 node-driver-registrar 역할을 하는 사이드카 컨테이너로 구성됩니다.
 
 이 컴포넌트는 모든 노드에서 실행되며 `kubelet`과 통신하며 CSI Node service에 대한 요청을 처리합니다. 이러한 호출은 스토리지 시스템에서 스토리지 볼륨을 Mount 혹은 Unmount 하며 그것들을 Pod가 이용할 수 있도록 해줍니다.
-`kubelet`은 호스트의 HostPath 볼륨을 통해 공유되는 UNIX domain socket을 사용하여 CSI driver를 호출합니다. 추가적인 UNIX domain socket은 node-driver-registrar이 드라이버를 kubelet에 등록하는데 사용됩니다.
+`kubelet`은 호스트의 HostPath 볼륨을 통해 공유되는 UNIX domain socket을 사용하여 CSI driver를 호출합니다. 추가적인 UNIX domain socket은 node-driver-registrar이 드라이버를 kubelet에 등록하는 데 사용됩니다.
 
 아래는 `ebs-csi-driver`를 설치했을 때 DaemonSet으로 생성된 `ebs-csi-node`의 내용입니다.
 위의 설명처럼 `node-driver-registrar`에 HostPath 볼륨이 연결되어 있으며 `csi.sock`를 사용하는 것을 확인할 수 있습니다.
@@ -139,12 +143,16 @@ Containers:
       /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kz76w (ro)
 ```
 
-노드 플러그인은 드라이버 볼륨을 마운트하기 위해 호스트에 직접 액세스해야 합니다. 파일 시스템 마운트와 Block Device를 kubelet에서 사용할 수 있게 하려면, CSI 드라이버는 드라이버 컨테이너가 생성한 마운트를 kubelet이 볼 수 있도록 하는 양방향 마운트 포인트를 사용해야 합니다.
+노드 플러그인은 드라이버 볼륨을 마운트 하기 위해 호스트에 직접 액세스해야 합니다. 파일 시스템 마운트와 Block Device를 kubelet에서 사용할 수 있게 하려면, CSI 드라이버는 드라이버 컨테이너가 생성한 마운트를 kubelet이 볼 수 있도록 하는 양방향 마운트 포인트를 사용해야 합니다.
+
+> Unix Domain Socket(UDS)란 IPC socket(inter-process communication socket) 이라고도 하며 TCP의 소켓과 동일한 API로 데이터를 주고받을 수 있는 local file 기반의 소켓입니다.
+> 더 자세한 내용은 Reference의 [유닉스 도메인 소켓(Unix Domain Socket) 이란?]을 참고해 주세요. 
 
 # 마치며
 
-이번 글에서는 
+이번 글에서는 시간 관계상 CSI 가 무엇인지, CSI Driver는 어떤 구성 요소를 가지고 있는지에 대해서 간단하게 알아보았습니다.
 
+다음에 기회가 된다면 좀 더 자세한 CSI Driver가 어떻게 동작하는지, 어떠한 과정을 거쳐서 볼륨을 관리하는지에 대해서 알아보도록 하겠습니다. 
 
 # Reference
 - [Basics of csi volumes and how to build a csi driver](https://bluexp.netapp.com/blog/cvo-blg-kubernetes-csi-basics-of-csi-volumes-and-how-to-build-a-csi-driver)

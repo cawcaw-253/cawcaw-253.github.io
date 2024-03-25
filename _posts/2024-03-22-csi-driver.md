@@ -49,6 +49,8 @@ Kubernetes는 3rd party 벤더들이 CSI 볼륨 드라이버를 만들때 다음
 > 여기서 모든 구성 요소(`external-provisioner` 와 `external-attacher` 를 포함한)를 단일 Pod에 배치하여 배포를 단순화할 수도 있습니다.
 > 하지만 이렇게 구성할 경우, 더 많은 리소스가 소모되고 `external-provisioner` 및 `external-attacher` 구성 요소에 리더 선출 프로토콜(예 : https://github.com/kubernetes-retired/contrib/tree/master/election)이 필요합니다.
 
+# Components of CSI Driver
+
 
 
 

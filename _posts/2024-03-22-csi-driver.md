@@ -51,15 +51,85 @@ Kubernetes는 3rd party 벤더들이 CSI 볼륨 드라이버를 만들때 다음
 
 # Components of CSI Driver
 
+## Controller Component
 
+컨트롤러 플러그인은 `Deployment` 또는 `StatefulSet`으로 배포되며 클러스터 내의 모든 노드에 마운트할 수 있습니다. 이는 CSI Controller 서비스를 구현하는 CSI 드라이버와 사이드카 컨테이너로 구성됩니다.
+컨트롤러 사이드카 컨테이너는 일반적으로 쿠버네티스 오브젝트와 상호 작용하고 CSI Controller 서비스를 호출합니다.
+
+컨트롤러는 호스트에 직접 액세스할 필요가 없습니다.(외부 컨트롤 플레인 서비스와 쿠버네티스 API를 통해 모든 작업을 수행할 수 있습니다.)
+고가용성(HA)을 위해 컨트롤러 구성 요소의 복사본을 여러 개 배포할 수 있지만, 리더 선출을 구현하여 특정 시간에 하나의 컨트롤러만 활성화되도록 해야 합니다.
+### Sidecar Containers
+
+CSI 사이드카 컨테이너는 쿠버네티스에서 CSI 드라이버의 개발 및 배포를 간소화하는 것을 목표로 하는 표준 컨테이너 세트입니다.
+이러한 컨테이너에는 Kubernetes API를 감시하고, "CSI 볼륨 드라이버" 컨테이너에 대해 적절한 작업을 트리거하고, 적절하게 Kubernetes API를 업데이트하는 공통 로직이 포함되어 있습니다.
+
+여기서 설명하는 사이드카 컨테이너는 다음과 같은 컨테이너들이 포함되어 있습니다.
+- [external-provisioner](https://kubernetes-csi.github.io/docs/external-provisioner.html)
+- [external-attacher](https://kubernetes-csi.github.io/docs/external-attacher.html)
+- [external-snapshotter](https://kubernetes-csi.github.io/docs/external-snapshotter.html)
+- [external-resizer](https://kubernetes-csi.github.io/docs/external-resizer.html)
+- [node-driver-registrar](https://kubernetes-csi.github.io/docs/node-driver-registrar.html)
+- [cluster-driver-registrar](https://kubernetes-csi.github.io/docs/cluster-driver-registrar.html) (deprecated)
+- [livenessprobe](https://kubernetes-csi.github.io/docs/livenessprobe.html)
+
+
+## Per-node Component
+
+노드 플러그인은 DaemonSet을 통해 클러스터의 모든 노드에 배포해야 합니다. 이는 CSI Node Service를 구현하는 CSI Driver와 node-driver-registrar 역할을 하는 사이드카 컨테이너로 구성됩니다.
+
+이 컴포넌트는 모든 노드에서 실행되며 `kubelet`과 통신하며 CSI Node service에 대한 요청을 처리합니다. 이러한 호출은 스토리지 시스템에서 스토리지 볼륨을 Mount 혹은 Unmount 하며 그것들을 Pod가 이용할 수 있도록 해줍니다.
+`kubelet`은 호스트의 HostPath 볼륨을 통해 공유되는 UNIX domain socket을 사용하여 CSI driver를 호출합니다. 추가적인 UNIX domain socket은 node-driver-registrar이 드라이버를 kubelet에 등록하는데 사용됩니다.
+
+아래는 `ebs-csi-driver`를 설치했을 때 DaemonSet으로 생성된 `ebs-csi-node`의 내용입니다.
+위의 설명처럼 `node-driver-registrar`에 HostPath 볼륨이 연결되어 있으며 `csi.sock`를 사용하는 것을 확인할 수 있습니다.
+```bash
+> k describe po -n kube-system ebs-csi-node
+
+Volumes:
+  kubelet-dir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lib/kubelet
+    HostPathType:  Directory
+  plugin-dir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lib/kubelet/plugins/ebs.csi.aws.com/
+    HostPathType:  DirectoryOrCreate
+  registration-dir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lib/kubelet/plugins_registry/
+    HostPathType:  Directory
+  device-dir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /dev
+    HostPathType:  Directory
+  probe-dir:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+...
+Containers:
+  ...
+  node-driver-registrar:
+    ...
+    Requests:
+      cpu:     10m
+      memory:  40Mi
+    Liveness:  exec [/csi-node-driver-registrar --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH) --mode=kubelet-registration-probe] delay=30s timeout=15s period=90s #success=1 #failure=3
+    Environment:
+      ADDRESS:               /csi/csi.sock
+      DRIVER_REG_SOCK_PATH:  /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
+    Mounts:
+      /csi from plugin-dir (rw)
+      /registration from registration-dir (rw)
+      /var/lib/kubelet/plugins/ebs.csi.aws.com/ from probe-dir (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kz76w (ro)
+```
+
+노드 플러그인은 드라이버 볼륨을 마운트하기 위해 호스트에 직접 액세스해야 합니다. 파일 시스템 마운트와 Block Device를 kubelet에서 사용할 수 있게 하려면, CSI 드라이버는 드라이버 컨테이너가 생성한 마운트를 kubelet이 볼 수 있도록 하는 양방향 마운트 포인트를 사용해야 합니다.
 
 
 # Reference
-- [[Kubernetes Deep Dive] 쿠버네티스 네트워크](https://blog.cawcaw253.com/posts/kubernetes-pod-network/)
-- [kube-proxy](https://kodekloud.com/blog/kube-proxy/)
-- [iptables-or-ipvs](https://www.tigera.io/blog/comparing-kube-proxy-modes-iptables-or-ipvs/)
-- [introduction-cni](https://kube.academy/courses/kubernetes-in-depth/lessons/an-introduction-to-cni)
-- [Kube-Proxy and CNI: The Hidden Components of Kubernetes Networking](https://medium.com/@seifeddinerajhi/kube-proxy-and-cni-the-hidden-components-of-kubernetes-networking-eb30000bf87a)
-- [Endpoint란](https://yoo11052.tistory.com/193)
-
-
+- [Basics of csi volumes and how to build a csi driver](https://bluexp.netapp.com/blog/cvo-blg-kubernetes-csi-basics-of-csi-volumes-and-how-to-build-a-csi-driver)
+- [CSI Volume Plugins in Kubernetes Design Doc](https://github.com/kubernetes/design-proposals-archive/blob/main/storage/container-storage-interface.md#cluster-level-deployment)
+- [Kubernetes CSI Sidecar Containers](https://kubernetes-csi.github.io/docs/sidecar-containers.html)
+- [KubernetesにおけるContainer Storage Interface (CSI)の概要と検証](https://qiita.com/ysakashita/items/4b56c2577f67f1b141e5)

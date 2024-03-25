@@ -34,8 +34,21 @@ Kubernetes의 스토리지 관련 기능은 Kubernetes 소스에 직접 내장�
 
 이 CSI는 Kubernetes, Mesos, Docker, CloudFoundry 등 다양한 컨테이너 환경에서 사용할 수 있도록 Kubernetes와 독립적으로 [Container Storage Interface 커뮤니티](https://github.com/container-storage-interface)에서 사양을 수립하고 있습니다.
 
+# CSI Driver에 대한 권장 메커니즘
+
+먼저 전반적으로 CSI 드라이버들이 어떻게 동작하는지 알기 위해서 Kubernetes 에서 권장하는 메커니즘에 대해서 설명하도록 하겠습니다.
+
 ![container-storage-interface_diagram](posts/20240322/container-storage-interface_diagram.png)
-# Service
+
+Kubernetes는 3rd party 벤더들이 CSI 볼륨 드라이버를 만들때 다음과 같은 사항을 따르는 것을 권장합니다.
+- 볼륨 플러그인 동작을 구현하고 CSI 사양(컨트롤러, 노드 및 신원 서비스 포함)에 정의된 대로 유닉스 도메인 소켓을 통해 gRPC 인터페이스를 노출하는 "<ins>CSI volume driver</ins>" 컨테이너를 만듭니다.
+- "<ins>CSI volume driver</ins>"에 Kubernetes 팀이 지원할 헬퍼 컨테이너를 번들합니다. (external-attacher, external-provisioner, node-driver-registrar, cluster-driver-registrar, external-resizer, external-snapshotter, livenessprobe).
+  이러한 헬퍼 컨테이너는 드라이버가 Kubernetes 시스템과 상호작용 하는것을 돕습니다. 이러한 헬퍼 컨테이너에 대한 자세한 내용은 아래에서 설명하도록 하겠습니다.
+- 클러스터 관리자가 위 다이어그램의 StatefulSet 과 DaemonSet을 배포하여 클러스터에 스토리지 시스템에 대한 지원을 추가하도록 합니다.
+
+> 여기서 모든 구성 요소(`external-provisioner` 와 `external-attacher` 를 포함한)를 단일 Pod에 배치하여 배포를 단순화할 수도 있습니다.
+> 하지만 이렇게 구성할 경우, 더 많은 리소스가 소모되고 `external-provisioner` 및 `external-attacher` 구성 요소에 리더 선출 프로토콜(예 : https://github.com/kubernetes-retired/contrib/tree/master/election)이 필요합니다.
+
 
 
 

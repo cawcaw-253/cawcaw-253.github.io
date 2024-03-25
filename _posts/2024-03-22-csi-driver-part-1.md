@@ -1,5 +1,5 @@
 ---
-title: "[Kubernetes Deep Dive] csi-driver"
+title: "[Kubernetes Deep Dive] CSI Driver - Part 1"
 author: cawcaw253
 date: 2024-03-22 17:55:00 +0900
 categories:
@@ -11,6 +11,8 @@ tags:
   - deep-dive
   - storage
   - volume
+  - csi
+  - csi-driver
 ---
 ---
 # 개요
@@ -72,7 +74,19 @@ CSI 사이드카 컨테이너는 쿠버네티스에서 CSI 드라이버의 개�
 - [cluster-driver-registrar](https://kubernetes-csi.github.io/docs/cluster-driver-registrar.html) (deprecated)
 - [livenessprobe](https://kubernetes-csi.github.io/docs/livenessprobe.html)
 
+아래는 추가적인 설정 없이 `ebs-csi-driver`를 설치했을 때 Deployment로 생성된 `ebs-csi-controller`의 내용입니다.
+위의 provisioner, attacher, snapshotter, resizer 및 liveness-probe가 포함되어 있습니다.
 
+```bash
+> k get po -n kube-system ebs-csi-controller-67bbddfc9-6f8vt -o yaml | yq e '.spec.containers.[].name'
+
+ebs-plugin
+csi-provisioner
+csi-attacher
+csi-snapshotter
+csi-resizer
+liveness-probe
+```
 ## Per-node Component
 
 노드 플러그인은 DaemonSet을 통해 클러스터의 모든 노드에 배포해야 합니다. 이는 CSI Node Service를 구현하는 CSI Driver와 node-driver-registrar 역할을 하는 사이드카 컨테이너로 구성됩니다.
@@ -127,9 +141,14 @@ Containers:
 
 노드 플러그인은 드라이버 볼륨을 마운트하기 위해 호스트에 직접 액세스해야 합니다. 파일 시스템 마운트와 Block Device를 kubelet에서 사용할 수 있게 하려면, CSI 드라이버는 드라이버 컨테이너가 생성한 마운트를 kubelet이 볼 수 있도록 하는 양방향 마운트 포인트를 사용해야 합니다.
 
+# 마치며
+
+이번 글에서는 
+
 
 # Reference
 - [Basics of csi volumes and how to build a csi driver](https://bluexp.netapp.com/blog/cvo-blg-kubernetes-csi-basics-of-csi-volumes-and-how-to-build-a-csi-driver)
 - [CSI Volume Plugins in Kubernetes Design Doc](https://github.com/kubernetes/design-proposals-archive/blob/main/storage/container-storage-interface.md#cluster-level-deployment)
 - [Kubernetes CSI Sidecar Containers](https://kubernetes-csi.github.io/docs/sidecar-containers.html)
 - [KubernetesにおけるContainer Storage Interface (CSI)の概要と検証](https://qiita.com/ysakashita/items/4b56c2577f67f1b141e5)
+- [유닉스 도메인 소켓(Unix Domain Socket) 이란?](https://www.lesstif.com/linux-core/unix-domain-socket)

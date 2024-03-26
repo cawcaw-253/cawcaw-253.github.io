@@ -146,7 +146,142 @@ Containers:
 노드 플러그인은 드라이버 볼륨을 마운트 하기 위해 호스트에 직접 액세스해야 합니다. 파일 시스템 마운트와 Block Device를 kubelet에서 사용할 수 있게 하려면, CSI 드라이버는 드라이버 컨테이너가 생성한 마운트를 kubelet이 볼 수 있도록 하는 양방향 마운트 포인트를 사용해야 합니다.
 
 > Unix Domain Socket(UDS)란 IPC socket(inter-process communication socket) 이라고도 하며 TCP의 소켓과 동일한 API로 데이터를 주고받을 수 있는 local file 기반의 소켓입니다.
-> 더 자세한 내용은 Reference의 [유닉스 도메인 소켓(Unix Domain Socket) 이란?]을 참고해 주세요. 
+> 더 자세한 내용은 Reference의 [유닉스 도메인 소켓(Unix Domain Socket) 이란?]을 참고해 주세요.
+
+
+# 트러블슈팅
+
+마침 테스트 환경에서 Persistent Volume을 삭제하려는데 원인을 알 수 없는 문제를 보게 되어서 트러블 슈팅 과정을 정리해 보았습니다. 
+
+## 이슈
+
+기존에 테스트에서 사용하던 Persistent Volume(이하 PV)을 삭제하려는데 Terminating 상태에서 멈춰있는 현상이 발생했습니다.
+
+원인을 파악하고자 PV를 describe 했더니 다음과 같은 결과를 볼 수 있었습니다.
+
+```bash
+> k describe pv pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720
+
+Name:              pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720
+Labels:            <none>
+Annotations:       pv.kubernetes.io/provisioned-by: ebs.csi.aws.com
+                   volume.kubernetes.io/provisioner-deletion-secret-name: 
+                   volume.kubernetes.io/provisioner-deletion-secret-namespace: 
+Finalizers:        [external-attacher/ebs-csi-aws-com]
+StorageClass:      ebs-sc
+Status:            Terminating (lasts 11m)
+Claim:             default/ebs-claim
+Reclaim Policy:    Delete
+Access Modes:      RWO
+VolumeMode:        Filesystem
+Capacity:          10Gi
+Node Affinity:     
+  Required Terms:  
+    Term 0:        topology.ebs.csi.aws.com/zone in [ap-northeast-2a]
+Message:           
+Source:
+    Type:              CSI (a Container Storage Interface (CSI) volume source)
+    Driver:            ebs.csi.aws.com
+    FSType:            ext4
+    VolumeHandle:      vol-0de988bf2cd660fc4
+    ReadOnly:          false
+    VolumeAttributes:      storage.kubernetes.io/csiProvisionerIdentity=1709191946455-2302-ebs.csi.aws.com
+Events:
+  Type     Reason              Age                From                                                                                     Message
+  ----     ------              ----               ----                                                                                     -------
+  Warning  VolumeFailedDelete  11m (x7 over 12m)  ebs.csi.aws.com_ebs-csi-controller-67bbddfc9-zchxr_6c064a65-efaa-44ed-ba6d-08c3a0812ea0  persistentvolume pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720 is still attached to node ip-10-29-76-202.ap-northeast-2.compute.internal
+```
+
+여기서 이벤트 정보만 보았을 때는 원인이 무엇인지 알기 어려웠습니다. 그래서 CSI Driver의 동작 방식을 참고하여 조사해 보았습니다.
+
+## Digging
+
+먼저 Reference의 [CSI - Spec]을 참고하여 스펙 및 Volume의 Lifecycle을 확인해 보았습니다.
+
+```
+   CreateVolume +------------+ DeleteVolume
+ +------------->|  CREATED   +--------------+
+ |              +---+----^---+              |
+ |       Controller |    | Controller       v
++++         Publish |    | Unpublish       +++
+|X|          Volume |    | Volume          | |
++-+             +---v----+---+             +-+
+                | NODE_READY |
+                +---+----^---+
+               Node |    | Node
+            Publish |    | Unpublish
+             Volume |    | Volume
+                +---v----+---+
+                | PUBLISHED  |
+                +------------+
+
+Figure 5: The lifecycle of a dynamically provisioned volume, from
+creation to destruction.
+```
+
+해당 링크의 [Volume Lifecycle](https://github.com/container-storage-interface/spec/blob/master/spec.md#volume-lifecycle) 부분을 참고하면 당연하겠지만 삭제 시 DeleteVolume 작업이 이루어진다는 것 그리고 해당 작업에 대한 [RPC Interface](https://github.com/container-storage-interface/spec/blob/master/spec.md#rpc-interface)가 정의되어 있다는 것을 확인할 수 있었습니다.
+
+그다음 메커니즘의 그림에서 DaemonSet Pod가 볼륨을 컨트롤한다는 것을 확인할 수 있었으므로 Reference의 [Kubernetes CSI Sidecar Containers]에서 Sidecar Container 중 어떤 컨테이너가 해당 작업을 하는지 확인하고자 했습니다.
+
+그리고 `external-provisioner`의 설명에서 다음과 같은 내용을 확인할 수 있었습니다.
+
+> The deletion of a `PersistentVolumeClaim` object bound to a `PersistentVolume` corresponding to this driver with a `delete` reclaim policy causes the sidecar container to trigger a `DeleteVolume` operation against the specified CSI endpoint to delete the volume. Once the volume is successfully deleted, the sidecar container also deletes the `PersistentVolume` object representing the volume.
+
+## 원인 파악
+
+위에서 조사한 내용에 따라서 `external-provisioner`에 대한 로그를 확인해 보았습니다.
+
+```bash
+> k logs -n kube-system ebs-csi-controller-67bbddfc9-zchxr -c csi-provisioner
+
+I0326 05:22:00.602156       1 controller.go:1509] delete "pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720": started
+I0326 05:22:00.602222       1 controller.go:1279] volume pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720 does not need any deletion secrets
+E0326 05:22:00.602252       1 controller.go:1519] delete "pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720": volume deletion failed: persistentvolume pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720 is still attached to node ip-10-29-76-202.ap-northeast-2.compute.internal
+W0326 05:22:00.602643       1 controller.go:989] Retrying syncing volume "pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720", failure 6
+E0326 05:22:00.602669       1 controller.go:1007] error syncing volume "pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720": persistentvolume pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720 is still attached to node ip-10-29-76-202.ap-northeast-2.compute.internal
+I0326 05:22:00.602705       1 event.go:298] Event(v1.ObjectReference{Kind:"PersistentVolume", Namespace:"", Name:"pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720", UID:"052bf861-a9e9-40e6-b36c-057bb0b6803f", APIVersion:"v1", ResourceVersion:"7111456", FieldPath:""}): type: 'Warning' reason: 'VolumeFailedDelete' persistentvolume pvc-3bd12eac-5eca-4cda-ae6c-c72e5a76d720 is still attached to node ip-10-29-76-202.ap-northeast-2.compute.internal
+I0326 05:22:00.968493       1 controller.go:1366] provision "default/ebs-claim" class "ebs-sc": started
+I0326 05:22:00.968940       1 event.go:298] Event(v1.ObjectReference{Kind:"PersistentVolumeClaim", Namespace:"default", Name:"ebs-claim", UID:"0e86d2f9-8a0f-418a-80cd-3a04caec5fe0", APIVersion:"v1", ResourceVersion:"7111525", FieldPath:""}): type: 'Normal' reason: 'Provisioning' External provisioner is provisioning volume for claim "default/ebs-claim"
+I0326 05:22:13.036644       1 controller.go:1075] Final error received, removing PVC 0e86d2f9-8a0f-418a-80cd-3a04caec5fe0 from claims in progress
+W0326 05:22:13.037419       1 controller.go:934] Retrying syncing claim "0e86d2f9-8a0f-418a-80cd-3a04caec5fe0", failure 3
+E0326 05:22:13.037601       1 controller.go:957] error syncing claim "0e86d2f9-8a0f-418a-80cd-3a04caec5fe0": failed to provision volume with StorageClass "ebs-sc": rpc error: code = Internal desc = Could not create volume "pvc-0e86d2f9-8a0f-418a-80cd-3a04caec5fe0": could not create volume in EC2: WebIdentityErr: failed to retrieve credentials
+caused by: InvalidIdentityToken: No OpenIDConnect provider found in your account for https://oidc.eks.ap-northeast-2.amazonaws.com/id/ABC
+        status code: 400, request id: e027270f-f655-45a0-ba50-69ecb1809e5e
+I0326 05:22:13.037230       1 event.go:298] Event(v1.ObjectReference{Kind:"PersistentVolumeClaim", Namespace:"default", Name:"ebs-claim", UID:"0e86d2f9-8a0f-418a-80cd-3a04caec5fe0", APIVersion:"v1", ResourceVersion:"7111525", FieldPath:""}): type: 'Warning' reason: 'ProvisioningFailed' failed to provision volume with StorageClass "ebs-sc": rpc error: code = Internal desc = Could not create volume "pvc-0e86d2f9-8a0f-418a-80cd-3a04caec5fe0": could not create volume in EC2: WebIdentityErr: failed to retrieve credentials
+caused by: InvalidIdentityToken: No OpenIDConnect provider found in your account for https://oidc.eks.ap-northeast-2.amazonaws.com/id/ABC
+        status code: 400, request id: e027270f-f655-45a0-ba50-69ecb1809e5e
+E0326 05:22:13.037770       1 controller.go:1026] claim "0e86d2f9-8a0f-418a-80cd-3a04caec5fe0" in work queue no longer exists
+E0326 05:22:21.038460       1 controller.go:1026] claim "0e86d2f9-8a0f-418a-80cd-3a04caec5fe0" in work queue no longer exists
+```
+
+`InvalidIdentityToken: No OpenIDConnect provider found in your account for https://oidc.eks.ap-northeast-2.amazonaws.com/id/ABC` 에서 볼 수 있듯 OIDC 설정에 문제가 있었다는 것을 알 수 있었습니다.
+
+## 해결
+
+이는 제가 테라폼으로 여러 EKS 환경을 관리하면서 다른 OIDC 설정을 지우면서 발생했던 문제였습니다. 
+해당 OIDC 설정을 다시 해주고 DaemonSet의 Pod를 재실행했더니 잘 지워지는 것을 확인할 수 있었습니다.
+
+```bash
+> k logs -n kube-system ebs-csi-controller-67bbddfc9-ntbsm -c csi-provisioner
+
+W0326 05:38:26.823437       1 feature_gate.go:241] Setting GA feature gate Topology=true. It will be removed in a future release.
+I0326 05:38:26.823503       1 feature_gate.go:249] feature gates: &{map[Topology:true]}
+I0326 05:38:26.824399       1 csi-provisioner.go:154] Version: v3.6.3
+I0326 05:38:26.824420       1 csi-provisioner.go:177] Building kube configs for running in cluster...
+I0326 05:38:26.828914       1 common.go:138] Probing CSI driver for readiness
+I0326 05:38:26.858228       1 csi-provisioner.go:230] Detected CSI driver ebs.csi.aws.com
+I0326 05:38:26.858258       1 csi-provisioner.go:240] Supports migration from in-tree plugin: kubernetes.io/aws-ebs
+I0326 05:38:26.861625       1 common.go:138] Probing CSI driver for readiness
+I0326 05:38:26.864538       1 csi-provisioner.go:299] CSI driver supports PUBLISH_UNPUBLISH_VOLUME, watching VolumeAttachments
+I0326 05:38:26.871538       1 controller.go:732] Using saving PVs to API server in background
+I0326 05:38:26.871944       1 leaderelection.go:250] attempting to acquire leader lease kube-system/ebs-csi-aws-com...
+I0326 05:38:42.852475       1 leaderelection.go:260] successfully acquired lease kube-system/ebs-csi-aws-com
+I0326 05:38:42.852756       1 leader_election.go:178] became leader, starting
+I0326 05:38:42.953118       1 controller.go:811] Starting provisioner controller ebs.csi.aws.com_ebs-csi-controller-67bbddfc9-ntbsm_99974c88-586f-40cf-afe8-68cfff66f7d4!
+I0326 05:38:42.953175       1 volume_store.go:97] Starting save volume queue
+I0326 05:38:43.058291       1 controller.go:860] Started provisioner controller ebs.csi.aws.com_ebs-csi-controller-67bbddfc9-ntbsm_99974c88-586f-40cf-afe8-68cfff66f7d4!
+```
+
 
 # 마치며
 
@@ -159,4 +294,5 @@ Containers:
 - [CSI Volume Plugins in Kubernetes Design Doc](https://github.com/kubernetes/design-proposals-archive/blob/main/storage/container-storage-interface.md#cluster-level-deployment)
 - [Kubernetes CSI Sidecar Containers](https://kubernetes-csi.github.io/docs/sidecar-containers.html)
 - [KubernetesにおけるContainer Storage Interface (CSI)の概要と検証](https://qiita.com/ysakashita/items/4b56c2577f67f1b141e5)
+- [CSI - Spec](https://github.com/container-storage-interface/spec/blob/master/spec.md)
 - [유닉스 도메인 소켓(Unix Domain Socket) 이란?](https://www.lesstif.com/linux-core/unix-domain-socket)

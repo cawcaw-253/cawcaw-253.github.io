@@ -502,11 +502,6 @@ fields @logStream, @timestamp, @message
 
 ### 3. 정리
 
-https://github.com/kubernetes/kubernetes/blob/master/pkg/registry/coordination/lease/strategy.go#L55
-
-https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/validation/validation.go#L26
-
-
 위의 예시를 통해서 ControlPlane에서 Node 리소스가 삭제되면 `kube-controller-manager`의 `garbagecollector`가 Lease 리소스를 삭제하고, Kubelet이 Node를 등록할 때에는 Kubelet이 자체적으로 Lease 리소스를 생성하는 것을 알 수 있었습니다.
 
 # 마치며
@@ -514,6 +509,8 @@ https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/valid
 이번에는 Lease가 무엇인지, 어떻게 생성되고 어떻게 삭제되는지 확인해 보았습니다.
 
 그리고 그 과정에서 DataPlane Node가 어떤 과정을 통해서 ControlPlane에 HealthCheck를 하는지 확인할 수 있었습니다.
+
+다음에 기회가 된다면 실제로 Kubelet이 어떤 과정으로 동작하고, kube-controller-manager의 동작이 어떻게 이루어지는지 알아보도록 하겠습니다.
 
 # Reference
 - [Lease API | Kubernetes](https://www.youtube.com/watch?v=ttPYCQ922mo)

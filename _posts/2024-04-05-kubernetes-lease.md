@@ -507,7 +507,6 @@ https://github.com/kubernetes/kubernetes/blob/master/pkg/registry/coordination/l
 https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/validation/validation.go#L26
 
 
-
 위의 예시를 통해서 ControlPlane에서 Node 리소스가 삭제되면 `kube-controller-manager`의 `garbagecollector`가 Lease 리소스를 삭제하고, Kubelet이 Node를 등록할 때에는 Kubelet이 자체적으로 Lease 리소스를 생성하는 것을 알 수 있었습니다.
 
 # 마치며

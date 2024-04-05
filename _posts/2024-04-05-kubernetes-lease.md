@@ -4,11 +4,15 @@ author: cawcaw253
 date: 2024-04-05 20:49:00 +0900
 categories:
   - Kubernetes
+  - Node
+  - Lease
+  - Heartbeat
 tags:
   - kubernetes
   - deep-dive
   - node
   - heartbeat
+  - lease
 ---
 ---
 # 개요
@@ -69,6 +73,9 @@ spec:
 
 서비스에 속한 리소스가 요청을 처리하도록 보장하기 위해서 사용됩니다.
 쿠버네티스에서는 특정 시간 동안 <ins>Component의 인스턴스 하나만 요청을 처리하도록 보장</ins>하는 데에도 사용합니다.
+
+![leader-election](posts/20240405/leader-election.png)
+
 아래와 같은 Component들이 해당되며 `kubectl get lease` 명령어를 통해 확인이 가능합니다.
 
 Components
@@ -493,6 +500,17 @@ fields @logStream, @timestamp, @message
 }
 ```
 
+### 3. 정리
+
+https://github.com/kubernetes/kubernetes/blob/master/pkg/registry/coordination/lease/strategy.go
+
+위의 예시를 통해서 ControlPlane에서 Node 리소스가 삭제되면 `kube-controller-manager`의 `garbagecollector`가 Lease 리소스를 삭제하고, Kubelet이 Node를 등록할 때에는 Kubelet이 자체적으로 Lease 리소스를 생성하는 것을 알 수 있었습니다.
+
+# 마치며
+
+이번에는 Lease가 무엇인지, 어떻게 생성되고 어떻게 삭제되는지 확인해 보았습니다.
+
+그리고 그 과정에서 DataPlane Node가 어떤 과정을 통해서 ControlPlane에 HealthCheck를 하는지 확인할 수 있었습니다.
 
 # Reference
 - [Lease API | Kubernetes](https://www.youtube.com/watch?v=ttPYCQ922mo)

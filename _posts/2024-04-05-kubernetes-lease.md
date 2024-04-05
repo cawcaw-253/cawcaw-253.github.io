@@ -17,8 +17,10 @@ tags:
 ---
 # 개요
 
-Kubelet의 로그를 보던 중 지속적으로 ControlPlane과 통신하며 Health Check를 하는 과정에 에러가 발생한 적이 있습니다. 
+Kubelet의 로그를 보던 중 지속적으로 ControlPlane과 통신하며 Health Check를 하는 과정에 에러가 발생한 적이 있습니다.
+
 트러블슈팅 하면서 Node Health Check에서 Lease가 있다는 것은 알았지만 자세히는 몰랐는데, 이번 기회에 공부하게 되었습니다. 
+
 이번 글에서는 Lease가 어떤 기능을 하는지 그리고 어떻게 삭제, 생성되는지에 대해서 정리해 보도록 하겠습니다.
 
 # Lease의 기능

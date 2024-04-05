@@ -11,14 +11,15 @@ tags:
   - heartbeat
 ---
 ---
-## 개요
+# 개요
 
-Lease는 일반적으로 분산된 시스템에서 여러 멤버가 협력하여 동작할 때 사용됩니다. 
-이는 공유 리소스를 lock 하고 각 노드 간의 활동을 조정하는 역할을 합니다. 
+Lease는 일반적으로 분산된 시스템에서 여러 멤버가 협력하여 동작할 때 사용됩니다.
+이는 공유 리소스를 lock 하고 각 노드 간의 활동을 조정하는 역할을 합니다.
 
-쿠버네티스에서는 Node Heartbeats를 통해 Node Health를 모니터링할 때 사용하고, 또한 component 레벨의 리더 선출에 사용됩니다. 
+쿠버네티스에서는 Node Heartbeats를 통해 Node Health를 모니터링할 때 사용하고, 또한 component 레벨의 리더 선출에 사용됩니다.
 그리고 애플리케이션을 실행할 때 고가용성 설정의 단일 구성원이 요청을 서비스할 수 있도록 하기 위해 Kubernetes Lease API를 사용합니다.
 
+# Lease의 기능
 ## Node Heartbeat
 
 쿠버네티스는 Lease API를 사용하여 kubelet 노드의 하트비트를 쿠버네티스 API Server에 전달합니다.
@@ -56,13 +57,13 @@ spec:
 
 > Node에서 직접 API Server를 통해서 상태를 갱신하면 될 텐데 어째서 Leases를 이용하는 걸까요? 
 > 
-> Reference의 Node Heartbeats를 보면 Heartbeats는 Node의 `. status`를 갱신한다는 것을 알 수 있습니다. 
+> Reference의 Node Heartbeats를 보면 Heartbeats는 Node의 `.status`를 갱신한다는 것을 알 수 있습니다. 
 > kubectl로 node의 status 부분을 확인하면 알겠지만 이는 node에 존재하는 이미지 및 볼륨등의 수에 따라 용량이 매우 커질 수 있습니다. 
 > 또한 kubelet에서 10s마다 반복되므로 노드의 수가 많다면 충분히 부담이 될 수 있는 작업입니다. 
-> Leases는 Heartbeats의 비용을 줄이고 etcd의 용량을 줄이고자 하는 목적에서 도입이 되었습니다. (Enhancements | efficient node heartbeats 참고) 
+> Leases는 Heartbeats의 비용을 줄이고 etcd의 용량을 줄이고자 하는 목적에서 도입이 되었습니다. ([Enhancements | efficient node heartbeats] 참고) 
 > 
 > 실제로 현재 Heartbeats 기능은 두 가지로 나뉘어 있으며 자주 반복되는 체크는 Lease가 하고 있으며 기존 `. status`의 갱신은 5분마다 체크하게 되었습니다. 
-> 더 자세한 갱신 주기에 대한 설명은 Reference의 Node Heartbeats를 참고해 주세요
+> 더 자세한 갱신 주기에 대한 설명은 Reference의 [Node Heartbeats]를 참고해 주세요
 
 ## Leader Election
 
@@ -90,10 +91,10 @@ kube-system       kube-controller-manager                            ip-172-16-4
 kube-system       kube-scheduler                                     ip-172-16-49-75.ap-northeast-2.compute.internal_bbeda1bd-4c1e-4b49-b0f5-f90af015bb46   27h
 ```
 
-## API 서버
+## API 서버 인증
 
 Kubernetes v1.26부터, 각 `kube-apiserver`는 Lease API를 이용해 자신의 identity를 시스템에 게시하게 되었습니다. 
-2024-04-05 현재 특별히 유용한 기능은 없지만 Client가 `kube-apiserver`의 인스턴스 수를 파악할 수 있는 메커니즘을 제공합니다. 
+2024-04-05 현재 특별히 유용한 기능은 없지만 Client가 `kube-apiserver`의 인스턴스 수를 파악할 수 있는 메커니즘을 제공합니다.
 
 아래의 명령어를 통해 몇 개의 `api-server`가 동작중인지 확인할 수 있습니다.
 
@@ -138,6 +139,7 @@ spec:
   renewTime: "2024-04-05T04:26:11.994363Z"
 ```
 
+# Practice
 ## Node Delete시 어떤 동작이 이루어지는가
 
 ### 1. 노드 삭제
@@ -162,7 +164,7 @@ ip-10-29-69-101.ap-northeast-2.compute.internal    ip-10-29-69-101.ap-northeast-
 이후 CloudWatch를 확인해 보니 `kubectl delete node` api 호출 이후에 `kube-controller-manager`가 lease, csinode, cninode 리소스에 대해 delete api를 호출하는 것을 알 수 있었습니다.
 
 - kube-controller-manager logs
-  ```
+  ```bash
   I0405 07:42:06.595081      11 garbagecollector.go:549] "Processing item" item="[vpcresources.k8s.aws/v1alpha1/CNINode, namespace: , name: ip-10-29-79-205.ap-northeast-2.compute.internal, uid: e0360822-7800-42c0-b655-d99dc015e58e]" virtual=false
   I0405 07:42:06.595402      11 garbagecollector.go:549] "Processing item" item="[coordination.k8s.io/v1/Lease, namespace: kube-node-lease, name: ip-10-29-79-205.ap-northeast-2.compute.internal, uid: c0018b83-f500-4380-a845-a0ef082a0794]" virtual=false
   I0405 07:42:06.595476      11 garbagecollector.go:549] "Processing item" item="[storage.k8s.io/v1/CSINode, namespace: , name: ip-10-29-79-205.ap-northeast-2.compute.internal, uid: aec4bd2d-97e2-444a-a7b7-42b30dcd498a]" virtual=false
@@ -176,7 +178,7 @@ ip-10-29-69-101.ap-northeast-2.compute.internal    ip-10-29-69-101.ap-northeast-
 
 - kube-apiserver-audit logs
   - Delete Node
-    ```
+    ```json
     {
         "kind": "Event",
         "apiVersion": "audit.k8s.io/v1",
@@ -239,7 +241,7 @@ ip-10-29-69-101.ap-northeast-2.compute.internal    ip-10-29-69-101.ap-northeast-
     }
     ```
   - Delete Lease
-    ```
+    ```json
     {
         "kind": "Event",
         "apiVersion": "audit.k8s.io/v1",
@@ -284,7 +286,7 @@ ip-10-29-69-101.ap-northeast-2.compute.internal    ip-10-29-69-101.ap-northeast-
 
 삭제된 노드에 접속하여 kubelet의 로그를 확인해 보니 여전히 kube-apiserver에 요청을 보내고 있는 것을 확인할 수 있었습니다.
 
-```
+```bash
 # On ip-10-29-79-205
 > journalctl -u kubelet -f
 Apr 05 06:04:04 ip-10-29-79-205.ap-northeast-2.compute.internal kubelet[477678]: E0405 06:04:04.422460  477678 nodelease.go:49] "Failed to get node when trying to set owner ref to the node lease" err="nodes \"ip-10-29-79-205.ap-northeast-2.compute.internal\" not found" node="ip-10-29-79-205.ap-northeast-2.compute.internal"
@@ -300,7 +302,7 @@ Apr 05 06:04:14 ip-10-29-79-205.ap-northeast-2.compute.internal kubelet[477678]:
 
 CloudWatch에서 `kube-apiserver-audit`의 로그를 확인해 보면 lease에 대한 get 요청이 지속적으로 들어오고 있으나, 위에서 `kube-controller-manager`가 삭제했으므로 404 Not Found를 보내고 있다는 것을 확인할 수 있습니다.
 
-```
+```json
 # On CloudWatch
 # kube-apiserver-audit에서 leases 리소스에 대한 get 요청이 오지만 삭제되었으므로  
 fields @logStream, @timestamp, @message
@@ -360,7 +362,7 @@ fields @logStream, @timestamp, @message
 추가적으로 위의 `kube-apiserver-audit`을 통해 user.username 혹은 user.groups이 가진 권한으로 lease에 대한 api 요청을 처리하는 것을 볼 수 있습니다.
 따라서 지금처럼 404 이슈가 아닌 401 등의 에러가 발생할 경우, `clusterrole`, `clusterrolebinding`등을 확인해 보면 도움이 될 수 있습니다.
 
-Kubernetes Reference | read the specified Lease 링크를 참고하여 어떠한 요청이 있는지 발생할 수 있는지 참고하여 Control Plane의 로그를 조회하는 것 또한 도움이 될 것 같습니다.
+[Kubernetes Reference | Lease] 링크를 참고하여 어떠한 요청이 있는지 발생할 수 있는지 참고하여 Control Plane의 로그를 조회하는 것 또한 도움이 될 것 같습니다.
 
 ### 2. 노드 재등록
 
@@ -368,13 +370,12 @@ Kubernetes Reference | read the specified Lease 링크를 참고하여 어떠한
 
 ```bash
 # On ip-10-29-79-205
-
 > sudo systemctl restart kubelet
 ```
 
 이후 CloudWatch에서 Lease Create에 대한 작업을 Kubelet에서 요청했고 잘 생성된 것을 확인할 수 있었습니다.
 
-```
+```json
 {
     "kind": "Event",
     "apiVersion": "audit.k8s.io/v1",
@@ -421,7 +422,6 @@ restart kubelet 이후, kubelet 및 `kube-apiserver-audit`의 로그를 확인�
 
 ```bash
 # On ip-10-29-79-205
-
 > journalctl -u kubelet -f
 Apr 05 09:38:42 ip-10-29-79-205.ap-northeast-2.compute.internal kubelet[502508]: I0405 09:38:42.566068  502508 kubelet.go:2528] "SyncLoop (probe)" probe="readiness" status="" pod="kube-system/aws-node-kx4hk"
 Apr 05 09:38:42 ip-10-29-79-205.ap-northeast-2.compute.internal kubelet[502508]: I0405 09:38:42.566204  502508 prober_manager.go:312] "Failed to trigger a manual run" probe="Readiness"
@@ -441,7 +441,9 @@ NAME                                               HOLDER                       
 ip-10-29-104-121.ap-northeast-2.compute.internal   ip-10-29-104-121.ap-northeast-2.compute.internal   30h
 ip-10-29-69-101.ap-northeast-2.compute.internal    ip-10-29-69-101.ap-northeast-2.compute.internal    30h
 ip-10-29-79-205.ap-northeast-2.compute.internal    ip-10-29-79-205.ap-northeast-2.compute.internal    2m57s
+```
 
+```json
 # On CloudWatch
 fields @logStream, @timestamp, @message
 | filter @message like "ip-10-29-79-205"

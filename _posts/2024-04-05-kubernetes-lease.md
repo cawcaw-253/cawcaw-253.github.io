@@ -315,13 +315,15 @@ Apr 05 06:04:14 ip-10-29-79-205.ap-northeast-2.compute.internal kubelet[477678]:
 
 CloudWatch에서 `kube-apiserver-audit`의 로그를 확인해 보면 lease에 대한 get 요청이 지속적으로 들어오고 있으나, 위에서 `kube-controller-manager`가 삭제했으므로 404 Not Found를 보내고 있다는 것을 확인할 수 있습니다.
 
-```json
+```
 # On CloudWatch
 # kube-apiserver-audit에서 leases 리소스에 대한 get 요청이 오지만 삭제되었으므로  
 fields @logStream, @timestamp, @message
 | filter @message like "ip-10-29-79-205"
 | sort @timestamp desc
+```
 
+```json
 {
     "kind": "Event",
     "apiVersion": "audit.k8s.io/v1",
@@ -456,12 +458,14 @@ ip-10-29-69-101.ap-northeast-2.compute.internal    ip-10-29-69-101.ap-northeast-
 ip-10-29-79-205.ap-northeast-2.compute.internal    ip-10-29-79-205.ap-northeast-2.compute.internal    2m57s
 ```
 
-```json
+```
 # On CloudWatch
 fields @logStream, @timestamp, @message
 | filter @message like "ip-10-29-79-205"
 | sort @timestamp desc
+```
 
+```json
 {
     "kind": "Event",
     "apiVersion": "audit.k8s.io/v1",
@@ -519,10 +523,10 @@ fields @logStream, @timestamp, @message
 다음에 기회가 된다면 실제로 Kubelet이 어떤 과정으로 동작하고, kube-controller-manager의 동작이 어떻게 이루어지는지 알아보도록 하겠습니다.
 
 # Reference
-- [Lease API | Kubernetes](https://www.youtube.com/watch?v=ttPYCQ922mo)
+- [Lease API - Kubernetes](https://www.youtube.com/watch?v=ttPYCQ922mo)
 - [리스 - Lease](https://alive-wong.tistory.com/70)
 - [Node Heartbeats](https://kubernetes.io/docs/reference/node/node-status/#heartbeats)
-- [Enhancements | efficient node heartbeats](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/589-efficient-node-heartbeats)
+- [Enhancements - efficient node heartbeats](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/589-efficient-node-heartbeats)
 - [Kubernetes Reference | Lease](https://dev-k8sref-io.web.app/docs/cluster/lease-v1/)
 - [Replica 레벨의 리더 선출 예시](https://www.pulumi.com/ai/answers/sztyN56FbxgbsaWRehCrZk/implementing-high-availability-financial-systems-on-kubernetes)
 

@@ -70,7 +70,7 @@ spec:
 > Reference의 Node Heartbeats를 보면 Heartbeats는 Node의 `.status`를 갱신한다는 것을 알 수 있습니다. 
 > kubectl로 node의 status 부분을 확인하면 알겠지만 이는 node에 존재하는 이미지 및 볼륨등의 수에 따라 용량이 매우 커질 수 있습니다. 
 > 또한 kubelet에서 10s마다 반복되므로 노드의 수가 많다면 충분히 부담이 될 수 있는 작업입니다. 
-> Leases는 Heartbeats의 비용을 줄이고 etcd의 용량을 줄이고자 하는 목적에서 도입이 되었습니다. ([Enhancements | efficient node heartbeats] 참고) 
+> Leases는 Heartbeats의 비용을 줄이고 etcd의 용량을 줄이고자 하는 목적에서 도입이 되었습니다. ([Enhancements - efficient node heartbeats] 참고) 
 > 
 > 실제로 현재 Heartbeats 기능은 두 가지로 나뉘어 있으며 자주 반복되는 체크는 Lease가 하고 있으며 기존 `. status`의 갱신은 5분마다 체크하게 되었습니다. 
 > 더 자세한 갱신 주기에 대한 설명은 Reference의 [Node Heartbeats]를 참고해 주세요
@@ -377,7 +377,7 @@ fields @logStream, @timestamp, @message
 추가적으로 위의 `kube-apiserver-audit`을 통해 user.username 혹은 user.groups이 가진 권한으로 lease에 대한 api 요청을 처리하는 것을 볼 수 있습니다.
 따라서 지금처럼 404 이슈가 아닌 401 등의 에러가 발생할 경우, `clusterrole`, `clusterrolebinding`등을 확인해 보면 도움이 될 수 있습니다.
 
-[Kubernetes Reference | Lease] 링크를 참고하여 어떠한 요청이 있는지 발생할 수 있는지 참고하여 Control Plane의 로그를 조회하는 것 또한 도움이 될 것 같습니다.
+[Kubernetes Reference - Lease] 링크를 참고하여 어떠한 요청이 있는지 발생할 수 있는지 참고하여 Control Plane의 로그를 조회하는 것 또한 도움이 될 것 같습니다.
 
 ### 2. 노드 재등록
 
@@ -527,6 +527,6 @@ fields @logStream, @timestamp, @message
 - [리스 - Lease](https://alive-wong.tistory.com/70)
 - [Node Heartbeats](https://kubernetes.io/docs/reference/node/node-status/#heartbeats)
 - [Enhancements - efficient node heartbeats](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/589-efficient-node-heartbeats)
-- [Kubernetes Reference | Lease](https://dev-k8sref-io.web.app/docs/cluster/lease-v1/)
+- [Kubernetes Reference - Lease](https://dev-k8sref-io.web.app/docs/cluster/lease-v1/)
 - [Replica 레벨의 리더 선출 예시](https://www.pulumi.com/ai/answers/sztyN56FbxgbsaWRehCrZk/implementing-high-availability-financial-systems-on-kubernetes)
 

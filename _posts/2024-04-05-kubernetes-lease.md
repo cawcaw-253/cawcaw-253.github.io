@@ -512,7 +512,7 @@ fields @logStream, @timestamp, @message
 }
 ```
 
-### 3. 정리
+### 정리
 
 위의 예시를 통해서 ControlPlane에서 Node 리소스가 삭제되면 `kube-controller-manager`의 `garbagecollector`가 Lease 리소스를 삭제하고, Kubelet이 Node를 등록할 때에는 Kubelet이 자체적으로 Lease 리소스를 생성하는 것을 알 수 있었습니다.
 
@@ -596,38 +596,34 @@ fields @logStream, @timestamp, @message
 
 해당 동작을 확인하고자 [Kubernetes - GitHub]를 참고하여 코드를 찾아봤습니다.
 
-<details>
-  <summary><i>Kubelet Trace</i></summary>
-  ```
-	  kubernetes/cmd/kubelet/kubelet.go > main()
-	  
-	  kubernetes/cmd/kubelet/app/server.go > NewKubeletCommand()
-	  
-	  kubernetes/cmd/kubelet/app/server.go > Run()
-	  kubernetes/cmd/kubelet/app/server.go > run()
-	  kubernetes/cmd/kubelet/app/server.go > RunKubelet()
-	  kubernetes/cmd/kubelet/app/server.go > startKubelet()
-	  
-  ```
-  
-startKubelet
-  
-</details>
-
 확인중 Lease에 대한 `get` 및 `create` 작업을 하는 코드를 찾을 수 있었습니다. [lease/controller > ensureLease()](https://github.com/kubernetes/kubernetes/blob/release-1.29/staging/src/k8s.io/component-helpers/apimachinery/lease/controller.go#L158).
 
+> **함수 설명**
 > ensureLease creates the lease if it does not exist. Returns the lease and
 > a bool (true if this call created the lease), or any error that occurs.
 
 따라서 노드가 정상적으로 동작시에는 ControlPlane에서 lease 리소스를 삭제하더라도 Kubelet이 재생성하게 되어있어 위와 같은 동작을 하는 것입니다.
 
+> **Kubelet Trace**
+> - kubernetes/cmd/kubelet/app/server.go > Run()
+> - kubernetes/cmd/kubelet/app/server.go > run()
+> - kubernetes/cmd/kubelet/app/server.go > RunKubelet()
+> - kubernetes/cmd/kubelet/app/server.go > startKubelet()
+>
+> - kubernetes/pkg/kubelet/kubelet.go > Run() > `go kl.nodeLeaseController.Run(context.Background())`
+> - kubernetes/vendor/k8s.io/component-helpers/apimachinery/lease/controller.go > Run()
+> - kubernetes/vendor/k8s.io/apimachinery/pkg/util/wait/backoff.go > JitterUntilWithContext()
+> - kubernetes/vendor/k8s.io/component-helpers/apimachinery/lease/controller.go > sync()
+> - kubernetes/vendor/k8s.io/component-helpers/apimachinery/lease/controller.go > backoffEnsureLease()
+> - kubernetes/vendor/k8s.io/component-helpers/apimachinery/lease/controller.go > ensureLease()
+
 # 마치며
 
-이번에는 Lease가 무엇인지, 어떻게 생성되고 어떻게 삭제되는지 확인해 보았습니다.
+이번에는 Lease가 무엇인지, 어떤 동작을 하는지 알아봤으며, 생성 및 삭제되는 프로세스에 대해서 확인해 보았습니다.
 
-그리고 그 과정에서 DataPlane Node가 어떤 과정을 통해서 ControlPlane에 HealthCheck를 하는지 확인할 수 있었습니다.
+그 과정에서 DataPlane Node가 어떤 과정을 통해서 ControlPlane에 HealthCheck를 하는지 확인할 수 있었습니다.
 
-다음에 기회가 된다면 실제로 Kubelet이 어떤 과정으로 동작하고, kube-controller-manager의 동작이 어떻게 이루어지는지 알아보도록 하겠습니다.
+다음에 기회가 된다면 `kube-controller-manager`의 `garbagecollector`는 어떤 리소스를 다루는지 알아보도록 하겠습니다.  
 
 # Reference
 - [Lease API - Kubernetes](https://www.youtube.com/watch?v=ttPYCQ922mo)

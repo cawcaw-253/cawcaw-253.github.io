@@ -157,7 +157,7 @@ spec:
 # Practice
 ## Node Delete시 어떤 동작이 이루어지는가
 
-### 1. 노드 삭제
+### 노드 삭제
 
 먼저 노드를 삭제하고 실제로 내부에서 어떤 변화가 발생하는지 확인해 보겠습니다.
 
@@ -381,7 +381,7 @@ fields @logStream, @timestamp, @message
 
 [Kubernetes Reference - Lease] 링크를 참고하여 어떠한 요청이 있는지 발생할 수 있는지 참고하여 Control Plane의 로그를 조회하는 것 또한 도움이 될 것 같습니다.
 
-### 2. 노드 재등록
+### 노드 재등록
 
 이런 상황에서 kubelet을 재실행하면 어떻게 될지 확인해 보겠습니다.
 
@@ -516,6 +516,111 @@ fields @logStream, @timestamp, @message
 
 위의 예시를 통해서 ControlPlane에서 Node 리소스가 삭제되면 `kube-controller-manager`의 `garbagecollector`가 Lease 리소스를 삭제하고, Kubelet이 Node를 등록할 때에는 Kubelet이 자체적으로 Lease 리소스를 생성하는 것을 알 수 있었습니다.
 
+## Lease 만 삭제한다면?
+
+### Lease 삭제
+
+kubectl 명령어로 Lease를 삭제해 보도록 하겠습니다.
+
+```bash
+> kubectl get lease -n kube-node-lease
+NAME                                              HOLDER                                            AGE
+ip-10-29-79-205.ap-northeast-2.compute.internal   ip-10-29-79-205.ap-northeast-2.compute.internal   2d2h
+
+> kubectl delete lease -n kube-node-lease ip-10-29-79-205.ap-northeast-2.compute.internal
+lease.coordination.k8s.io "ip-10-29-79-205.ap-northeast-2.compute.internal" deleted
+```
+
+그리고 get lease를 하면 바로 생성된 것을 알 수 있습니다.
+
+```bash
+> kubectl get lease -n kube-node-lease
+NAME                                              HOLDER                                            AGE
+ip-10-29-79-205.ap-northeast-2.compute.internal   ip-10-29-79-205.ap-northeast-2.compute.internal   3s
+```
+
+CloudWatch에서 확인을 해보면 아래에서 볼 수 있듯, Kubelet이 Create 작업을 진행한 것을 알 수 있습니다.
+
+```
+# On CloudWatch
+fields @logStream, @timestamp, @message
+| filter objectRef.resource = "leases"
+| filter verb = "create"
+| sort @timestamp desc
+```
+
+```json
+{
+    "kind": "Event",
+    "apiVersion": "audit.k8s.io/v1",
+    "level": "Metadata",
+    "auditID": "8eeb96dd-60cb-4c0f-a296-cb06f681108b",
+    "stage": "ResponseComplete",
+    "requestURI": "/apis/coordination.k8s.io/v1/namespaces/kube-node-lease/leases?timeout=10s",
+    "verb": "create",
+    "user": {
+        "username": "system:node:ip-10-29-79-205.ap-northeast-2.compute.internal",
+        "uid": "aws-iam-authenticator:0430********:AROAQUA5FHPODRA52EIMH",
+        "groups": ["system:bootstrappers", "system:nodes", "system:authenticated"],
+        "extra": {
+            "accessKeyId": ["ASIAQUA5FHPOAOCMOFGI"],
+            "arn": ["arn:aws:sts::0430********:assumed-role/ToyBox-1-29-EKSNodeGroupRole/i-04ccfd26e5c668ef8"],
+            "canonicalArn": ["arn:aws:iam::0430********:role/ToyBox-1-29-EKSNodeGroupRole"],
+            "principalId": ["AROAQUA5FHPODRA52EIMH"],
+            "sessionName": ["i-04ccfd26e5c668ef8"]
+        }
+    },
+    "sourceIPs": ["10.29.79.205"],
+    "userAgent": "kubelet/v1.29.0 (linux/amd64) kubernetes/3034fd4",
+    "objectRef": {
+        "resource": "leases",
+        "namespace": "kube-node-lease",
+        "name": "ip-10-29-79-205.ap-northeast-2.compute.internal",
+        "apiGroup": "coordination.k8s.io",
+        "apiVersion": "v1"
+    },
+    "responseStatus": {
+        "metadata": {},
+        "code": 201
+    },
+    "requestReceivedTimestamp": "2024-04-07T11:47:47.934560Z",
+    "stageTimestamp": "2024-04-07T11:47:47.942617Z",
+    "annotations": {
+        "authorization.k8s.io/decision": "allow",
+        "authorization.k8s.io/reason": ""
+    }
+}
+```
+
+### Kubelet 동작 확인
+
+해당 동작을 확인하고자 [Kubernetes - GitHub]를 참고하여 코드를 찾아봤습니다.
+
+<details>
+  <summary><i>Kubelet Trace</i></summary>
+  ```
+	  kubernetes/cmd/kubelet/kubelet.go > main()
+	  
+	  kubernetes/cmd/kubelet/app/server.go > NewKubeletCommand()
+	  
+	  kubernetes/cmd/kubelet/app/server.go > Run()
+	  kubernetes/cmd/kubelet/app/server.go > run()
+	  kubernetes/cmd/kubelet/app/server.go > RunKubelet()
+	  kubernetes/cmd/kubelet/app/server.go > startKubelet()
+	  
+  ```
+  
+startKubelet
+  
+</details>
+
+확인중 Lease에 대한 `get` 및 `create` 작업을 하는 코드를 찾을 수 있었습니다. [lease/controller > ensureLease()](https://github.com/kubernetes/kubernetes/blob/release-1.29/staging/src/k8s.io/component-helpers/apimachinery/lease/controller.go#L158).
+
+> ensureLease creates the lease if it does not exist. Returns the lease and
+> a bool (true if this call created the lease), or any error that occurs.
+
+따라서 노드가 정상적으로 동작시에는 ControlPlane에서 lease 리소스를 삭제하더라도 Kubelet이 재생성하게 되어있어 위와 같은 동작을 하는 것입니다.
+
 # 마치며
 
 이번에는 Lease가 무엇인지, 어떻게 생성되고 어떻게 삭제되는지 확인해 보았습니다.
@@ -529,6 +634,7 @@ fields @logStream, @timestamp, @message
 - [리스 - Lease](https://alive-wong.tistory.com/70)
 - [Node Heartbeats](https://kubernetes.io/docs/reference/node/node-status/#heartbeats)
 - [Enhancements - efficient node heartbeats](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/589-efficient-node-heartbeats)
-- [Kubernetes Reference - Lease](https://dev-k8sref-io.web.app/docs/cluster/lease-v1/)
+- [Kubernetes Reference - Lease](https://kubernetes.io/docs/reference/kubernetes-api/cluster-resources/lease-v1/)
+- [Kubernetes - GitHub](https://github.com/kubernetes/kubernetes)
 - [Replica 레벨의 리더 선출 예시](https://www.pulumi.com/ai/answers/sztyN56FbxgbsaWRehCrZk/implementing-high-availability-financial-systems-on-kubernetes)
 

@@ -21,6 +21,20 @@ Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 
 
 # CoreDNS 기초
 
+우선 CoreDNS는 Pod로 실행되기에 
+```
+$ kubectl get po -n kube-system -l k8s-app=kube-dns
+
+NAME                       READY   STATUS    RESTARTS   AGE
+coredns-76f75df574-c6dwp   1/1     Running   0          58m
+coredns-76f75df574-s8nfx   1/1     Running   0          58m
+
+$ kubectl get svc -n kube-system
+
+NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
+kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   60m
+```
+
 ```
 root@nginx:/# cat /etc/resolv.conf 
 

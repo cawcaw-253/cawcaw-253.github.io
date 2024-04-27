@@ -15,6 +15,9 @@ published: false
 
 Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 때 외부 DNS 서버가 아닌 내부 DNS인 CoreDNS에 질의를 하게됩니다.
 
+> 기존에는 Kube-DNS가 이 역할을 했었습니다. 그러나 `1.12`버전부터 CoreDNS가 표준으로 채택되었고, `kubeadm`으로 설치하는 경우 CoreDNS가 설치된다.
+{: .prompt-info }
+
 ```
 root@nginx:/# cat /etc/resolv.conf 
 

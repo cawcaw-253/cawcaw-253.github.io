@@ -46,8 +46,12 @@ nameserver 10.96.0.10
 options ndots:5
 ```
 
+따라서 Pod는 내부 외부 도메인이냐에 따라서 아래와 같이 CoreDNS에 쿼리를 보내고 동작을 하게됩니다.
 
 ![internal-coredns](posts/20240428/coredns.png)
+
+![external-coredns](posts/20240428/coredns-external.png)
+
 
 # Corefile
 

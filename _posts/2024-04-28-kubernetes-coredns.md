@@ -19,7 +19,7 @@ Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 
 
 이번에는 이 CoreDNS에 대해서 공부한 내용을 정리해 보도록 하겠습니다.
 
-# CoreDNS 기본
+# CoreDNS 기본 구성
 
 우선 CoreDNS는 Pod로 실행되기에 Service를 통해 요청을 받게됩니다. 그래서 `kubeadm`으로  클러스터를 생성한 뒤 오브젝트를 확인해보면 다음과 같이 Pod와 Service가 있는 것을 확인할 수 있습니다.
 
@@ -36,7 +36,7 @@ NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         
 kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   60m
 ```
 
-이러한 CoreDNS의 Service 주소는 
+이러한 CoreDNS의 Service 주소는 Pod 생성시에 자동으로 `/etc/resolv.conf`에 설정되게 됩니다.
 
 ```
 root@nginx:/# cat /etc/resolv.conf 
@@ -47,12 +47,9 @@ options ndots:5
 ```
 
 
+![internal-coredns](posts/20240428/coredns.png)
 
-트러블슈팅 하면서 Node Health Check에서 Lease가 있다는 것은 알았지만 자세히는 몰랐는데, 이번 기회에 공부하게 되었습니다. 
-
-이번 글에서는 Lease가 어떤 기능을 하는지 그리고 어떻게 삭제, 생성되는지에 대해서 정리해 보도록 하겠습니다.
-
-# Lease의 기능
+# Corefile
 
 
 ```bash
@@ -89,7 +86,8 @@ Corefile:
 }
 ```
 
-## Node Heartbeat
+
+# FDQN
 
 쿠버네티스는 Lease API를 사용하여 kubelet 노드의 하트비트를 쿠버네티스 API Server에 전달합니다.
 모든 노드에는 아래와 같이 같은 이름을 가진 Lease 오브젝트가 kube-node-lease namespace에 존재합니다.

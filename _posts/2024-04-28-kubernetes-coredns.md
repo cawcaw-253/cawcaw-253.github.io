@@ -13,7 +13,17 @@ published: false
 ---
 # 개요
 
-Kubernetes에서는 
+Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 때 외부 DNS 서버가 아닌 내부 DNS인 CoreDNS에 질의를 하게됩니다.
+
+```
+root@nginx:/# cat /etc/resolv.conf 
+
+search default.svc.cluster.local svc.cluster.local cluster.local kornet
+nameserver 10.96.0.10
+options ndots:5
+```
+
+
 
 트러블슈팅 하면서 Node Health Check에서 Lease가 있다는 것은 알았지만 자세히는 몰랐는데, 이번 기회에 공부하게 되었습니다. 
 

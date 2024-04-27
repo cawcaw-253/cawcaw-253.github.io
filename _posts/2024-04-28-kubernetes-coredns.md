@@ -19,9 +19,10 @@ Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 
 
 이번에는 이 CoreDNS에 대해서 공부한 내용을 정리해 보도록 하겠습니다.
 
-# CoreDNS 기초
+# CoreDNS 기본
 
-우선 CoreDNS는 Pod로 실행되기에 
+우선 CoreDNS는 Pod로 실행되기에 Service를 통해 요청을 받게됩니다. 그래서 `kubeadm`으로  클러스터를 생성한 뒤 오브젝트를 확인해보면 다음과 같이 Pod와 Service가 있는 것을 확인할 수 있습니다.
+
 ```
 $ kubectl get po -n kube-system -l k8s-app=kube-dns
 
@@ -34,6 +35,8 @@ $ kubectl get svc -n kube-system
 NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
 kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   60m
 ```
+
+이러한 CoreDNS의 Service 주소는 
 
 ```
 root@nginx:/# cat /etc/resolv.conf 
@@ -90,3 +93,10 @@ Corefile:
 
 쿠버네티스는 Lease API를 사용하여 kubelet 노드의 하트비트를 쿠버네티스 API Server에 전달합니다.
 모든 노드에는 아래와 같이 같은 이름을 가진 Lease 오브젝트가 kube-node-lease namespace에 존재합니다.
+
+
+# Reference
+- [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
+- https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/
+- https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+- https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/

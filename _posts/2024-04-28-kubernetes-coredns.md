@@ -53,7 +53,7 @@ options ndots:5
 ![external-coredns](posts/20240428/coredns-external.png)
 
 
-# Corefile
+# Corefile을 이용한 설정
 
 
 ```bash

@@ -52,9 +52,15 @@ options ndots:5
 
 ![external-coredns](posts/20240428/coredns-external.png)
 
-
 # Corefile을 이용한 설정
 
+Corefile은 DNS 서버가 작동하고 들어오는 요청에 응답하는 방법을 지정하는 텍스트 파일입니다.
+
+Corefile은 ConfigMap 오브젝트를 통해서 확인할 수 있습니다. 아래의 내용을 보면 클러스터의 최상위 도메인 이름은 쿠버네티스 플러그인 구성에서 "cluster.local"로 지정되는 것을 확인 할 수 있습니다. 플러그인은 또한 in-addr.arpa 및 ip6.arpa 도메인을 사용하여 IPv4 및 IPv6 주소에 대한 역방향 DNS 조회를 처리하도록 구성됩니다.
+
+> 여기서 역방향 DNS 조회란 일반적으로 도메인 이름을 기반으로 
+
+Corefile과 구문에 대해 더 자세히 알아보려면 [CoreDNS 매뉴얼](https://coredns.io/manual/toc/) 또는 [CoreDNS ConfigMap 옵션](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#coredns-configmap-options)에서 제공되는 공식 문서를 참조해 주세요.
 
 ```bash
 $ kubectl describe cm -n kube-system coredns
@@ -102,3 +108,4 @@ Corefile:
 - https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/
 - https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
 - https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/
+- [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)

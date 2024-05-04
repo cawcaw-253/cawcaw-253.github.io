@@ -110,18 +110,66 @@ Corefile은 ConfigMap 오브젝트를 통해서 확인할 수 있으며, 여러 
 Corefile과 구문에 대해 더 자세히 알아보려면 [CoreDNS 매뉴얼](https://coredns.io/manual/toc/) 또는 [CoreDNS ConfigMap 옵션](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#coredns-configmap-options)에서 제공되는 공식 문서를 참조해 주세요.
 
 
-# FDQN
+# DNS Resolve
 
-쿠버네티스는 Lease API를 사용하여 kubelet 노드의 하트비트를 쿠버네티스 API Server에 전달합니다.
-모든 노드에는 아래와 같이 같은 이름을 가진 Lease 오브젝트가 kube-node-lease namespace에 존재합니다.
+일반적으로 호스트에서 특정 도메인으로 요청을 보내면 DNS로 IP주소를 가져와서 해당 주소로 요청을 보내게 됩니다.
 
+마찬가지로 Kubernetes의 Pod에서도 요청을 보내면 CoreDNS를 대상으로 Query를 보내고 주소를 가져와서 요청을 처리하게 됩니다.
 
+따라서 이해한 바에 따르면 `amazon.com`에 요청을 보내면 바로 주소를 가져와서 요청을 처리해야할 것입니다. 그런데 Pod에서 `curl amazon.com`을 실행한 뒤 CoreDNS의 로그를 보면 다음과 같은 로그를 보실 수 있습니다.
+
+```bash
+[INFO] 10.29.101.97:49777 - 15626 "AAAA IN amazon.com.default.svc.cluster.local. udp 54 false 512" NXDOMAIN qr,aa,rd 147 0.000245472s
+[INFO] 10.29.101.97:49777 - 43276 "A IN amazon.com.default.svc.cluster.local. udp 54 false 512" NXDOMAIN qr,aa,rd 147 0.000376412s
+[INFO] 10.29.101.97:45709 - 13560 "AAAA IN amazon.com.svc.cluster.local. udp 46 false 512" NXDOMAIN qr,aa,rd 139 0.000214814s
+[INFO] 10.29.101.97:45709 - 14586 "A IN amazon.com.svc.cluster.local. udp 46 false 512" NXDOMAIN qr,aa,rd 139 0.000286298s
+[INFO] 10.29.101.97:59010 - 20726 "A IN amazon.com.cluster.local. udp 42 false 512" NXDOMAIN qr,aa,rd 135 0.000150982s
+[INFO] 10.29.101.97:59010 - 7664 "AAAA IN amazon.com.cluster.local. udp 42 false 512" NXDOMAIN qr,aa,rd 135 0.00031106s
+[INFO] 10.29.101.97:51305 - 54019 "AAAA IN amazon.com.ap-northeast-2.compute.internal. udp 60 false 512" NXDOMAIN qr,rd,ra 183 0.001475703s
+[INFO] 10.29.101.97:51305 - 50693 "A IN amazon.com.ap-northeast-2.compute.internal. udp 60 false 512" NXDOMAIN qr,rd,ra 183 0.001544829s
+[INFO] 10.29.101.97:55579 - 58497 "A IN amazon.com. udp 28 false 512" NOERROR qr,rd,ra 106 0.001595382s
+[INFO] 10.29.101.97:55579 - 31875 "AAAA IN amazon.com. udp 28 false 512" NOERROR qr,rd,ra 125 0.00166369s
+```
+
+로그를 보면 `amazon.com` 뿐만 아니라 `amazon.com.default.svc.cluster.local.`, `amazon.com.cluster.local` 등의 여러 도메인을 쿼리하는 것을 볼 수 있습니다.
+
+이렇게 동작하는 이유는 각 Pod에 설정된 `resolv.conf`를 보면 알 수 있습니다.
+
+```bash
+$ kubectl exec -it <POD_NAME> -- cat /etc/resolv.conf
+
+search default.svc.cluster.local svc.cluster.local cluster.local ap-northeast-2.compute.internal
+nameserver 172.20.0.10
+options ndots:5
+```
+
+resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]을 참고하면 hostname의 마지막에 `.` 이 포함되어있지 않으면 해당 hostname은 루트 도메인을 로컬 도메인 이름으로 간주하여 search에 있는 서치 도메인을 순서대로 붙여 성공할 때까지 진행하게 된다고 나와있습니다.
+
+```
+# Search list for host-name lookup.
+  By default, the search list contains one entry, the local
+  domain name.  It is determined from the local hostname
+  returned by gethostname(2); the local domain name is taken
+  to be everything after the first '.'.  Finally, if the
+  hostname does not contain a '.', the root domain is
+  assumed as the local domain name.
+
+  This may be changed by listing the desired domain search
+  path following the search keyword with spaces or tabs
+  separating the names.  Resolver queries having fewer than
+  ndots dots (default is 1) in them will be attempted using
+  each component of the search path in turn until a match is
+  found.
+```
+
+즉 `amazon.com` 이라는 도메인의 루트 도메인을 로컬 도메인 이름으로 간주하여 `search` 리스트의 모든 
 # Reference
 - [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
 - https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/
 - https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
 - https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/
 - [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
+- [linux manual - resolv.conf](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html)
 
 
 이미지 출처

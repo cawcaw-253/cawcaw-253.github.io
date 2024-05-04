@@ -52,7 +52,9 @@ options ndots:5
 
 ![external-coredns](posts/20240428/coredns-external.png)
 
-# Corefile을 이용한 설정
+# CoreDNS 상세
+
+## Corefile을 이용한 설정
 
 Corefile은 DNS 서버가 작동하고 들어오는 요청에 응답하는 방법을 지정하는 텍스트 파일입니다.
 
@@ -109,8 +111,7 @@ Corefile은 ConfigMap 오브젝트를 통해서 확인할 수 있으며, 여러 
 
 Corefile과 구문에 대해 더 자세히 알아보려면 [CoreDNS 매뉴얼](https://coredns.io/manual/toc/) 또는 [CoreDNS ConfigMap 옵션](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#coredns-configmap-options)에서 제공되는 공식 문서를 참조해 주세요.
 
-
-# DNS Resolve
+## DNS Resolve
 
 일반적으로 호스트에서 특정 도메인으로 요청을 보내면 DNS로 IP주소를 가져와서 해당 주소로 요청을 보내게 됩니다.
 
@@ -143,17 +144,45 @@ nameserver 172.20.0.10
 options ndots:5
 ```
 
-resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]을 참고하면 쿼리에 `.` 이 `ndots` 보다 적게 포함되어있을 경우, search에 있는 서치 도메인을 순서대로 붙여 매치될 때까지 진행하게 된다고 나와있습니다.
+resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]의 내용을 참고하면 쿼리에 `.` 이 `ndots` 보다 적게 포함되어있을 경우(FQDN이 아닐경우), search에 있는 서치 도메인을 순서대로 붙여 매치될 때까지 진행하게 된다고 나와있습니다.
+
+여기서 `ndots`는 쿼리 이름에 있는 점의 수를 FQDN(Fully Qualified Domain Name)으로 간주하는 임계값을 나타냅니다.
 
 ```
 # Search list for host-name lookup.
 
 By default, the search list contains one entry, the local domain name.  It is determined from the local hostname returned by gethostname(2); the local domain name is taken to be everything after the first '.'.  Finally, if the hostname does not contain a '.', the root domain is assumed as the local domain name.
 
+...
+
 Resolver queries having fewer than ndots dots (default is 1) in them will be attempted using each component of the search path in turn until a match is found.
 ```
 
-따라서 `amazon.com` 이라는 도메인의 `.`의 수가 5보다 작으므로 `search` 리스트의 모든 검색을 진행하여 위와 같은 로그가 찍힌 것입니다.
+따라서 `amazon.com` 이라는 도메인의 `.`의 수가 5보다 작으므로 FQDN이라고 판단되지 않아 `search` 리스트의 모든 검색을 진행하므로 위와 같은 로그가 찍힌 것입니다.
+
+### Query 성능 개선
+
+위의 내용을 보면 Pod 내에서 우리가 일반적으로 사용하는 도메인 이름을 사용한다면 하나의 도메인에 접근할 때 3~4배의 쿼리가 발생한다는 것을 알 수 있습니다.
+
+이는 트래픽이 많아진다면 CoreDNS에 많은 부담이 될 수 있습니다. 그렇다면 이를 어떻게 해결할 수 있을까요?
+
+답은 간단합니다. 바로 FQDN 도메인으로 질의를 하도록 Application 단에서 FQDN 도메인을 사용하도록 하면 됩니다.
+
+즉 `curl amazon.com` 이 아닌 `curl amazon.com.` 으로 제일 뒤에 `.`을 붙여 FQDN으로 명시적으로 만들어주면 다음과 같이 한번에 Query가 성공하는 것을 볼 수 있습니다.
+
+```bash
+[INFO] 10.85.0.1:59724 - 59684 "A IN amazon.com. udp 28 false 512" NOERROR qr,rd,ra 106 0.002072165s
+[INFO] 10.85.0.1:59724 - 9510 "AAAA IN amazon.com. udp 28 false 512" NOERROR qr,rd,ra 125 0.004880986s
+```
+
+### 왜 이러한 설정이 되어있을까?
+
+이렇게 설정되어 있는 이유는 편의성 때문이며 같은 네임스페이스, 혹은 다른 네임스페이스에 있는 서비스를 도메인으로 접근할 때 FQDN이 아닌 짧고 간결한 도메인 명으로 접근할 수 있게 하기 위합입니다. [Namespaces of Services]
+
+이러한 설정 덕분에 우리는 매번 `<SERVICE_NAME>.default.svc.cluster.local` 와 같이 길게 쓸 필요없이 service 이름만으로 연결이 될 수 있는 것입니다.
+
+# 마치며
+
 
 
 # Reference
@@ -163,6 +192,7 @@ Resolver queries having fewer than ndots dots (default is 1) in them will be att
 - https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/
 - [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
 - [linux manual - resolv.conf](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html)
+- [Namespaces of Services](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#namespaces-of-services)
 
 
 이미지 출처

@@ -147,22 +147,23 @@ resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]을 참고하�
 
 ```
 # Search list for host-name lookup.
-  By default, the search list contains one entry, the local
-  domain name.  It is determined from the local hostname
-  returned by gethostname(2); the local domain name is taken
-  to be everything after the first '.'.  Finally, if the
-  hostname does not contain a '.', the root domain is
-  assumed as the local domain name.
 
-  This may be changed by listing the desired domain search
-  path following the search keyword with spaces or tabs
-  separating the names.  Resolver queries having fewer than
-  ndots dots (default is 1) in them will be attempted using
-  each component of the search path in turn until a match is
-  found.
+By default, the search list contains one entry, the local
+domain name.  It is determined from the local hostname
+returned by gethostname(2); the local domain name is taken
+to be everything after the first '.'.  Finally, if the
+hostname does not contain a '.', the root domain is
+assumed as the local domain name.
+
+This may be changed by listing the desired domain search
+path following the search keyword with spaces or tabs
+separating the names.  Resolver queries having fewer than
+ndots dots (default is 1) in them will be attempted using
+each component of the search path in turn until a match is
+found.
 ```
 
-즉 `amazon.com` 이라는 도메인의 루트 도메인을 로컬 도메인 이름으로 간주하여 `search` 리스트의 모든 
+따라서 `amazon.com` 이라는 도메인에 `search` 리스트의 모든 
 # Reference
 - [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
 - https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/

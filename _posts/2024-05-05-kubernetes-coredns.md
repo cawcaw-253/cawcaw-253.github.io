@@ -1,13 +1,13 @@
 ---
-title: "[Kubernetes Deep Dive] Core DNS"
+title: "[Kubernetes Deep Dive] CoreDNS"
 author: cawcaw253
-date: 2023-04-28 17:32:00 +0900
+date: 2023-05-05 17:32:00 +0900
 categories:
   - Kubernetes
 tags:
   - kubernetes
   - coredns
-published: false
+published: true
 ---
 
 ---
@@ -49,10 +49,10 @@ options ndots:5
 Pod는 이 설정에 따라서 CoreDNS에 쿼리를 보내게 되고, CoreDNS에서는 질의받은 도메인이 내부인지 외부인지에 따라서 아래와 같이 동작을 하게됩니다.
 
 - 내부 Query
-	![internal-coredns](posts/20240428/coredns.png)_ref : https://h-susu.tistory.com/13_
+	![internal-coredns](posts/20240505/coredns-internal.png)_ref : https://h-susu.tistory.com/13_
 
 - 외부 Query
-	![external-coredns](posts/20240428/coredns-external.png)_ref : https://h-susu.tistory.com/13_
+	![external-coredns](posts/20240505/coredns-external.png)_ref : https://h-susu.tistory.com/13_
 
 # CoreDNS Deep Dive
 
@@ -96,7 +96,7 @@ Corefile:
 
 Corefile은 ConfigMap 오브젝트를 통해서 확인할 수 있으며, 여러 플러그인의 조합으로 구성되어 있습니다.
 
-위의 내용을 보면 클러스터의 최상위 도메인 이름은 쿠버네티스 플러그인 구성에서 "cluster.local"로 지정되는 것을 확인 할 수 있습니다. 플러그인은 in-addr.arpa 및 ip6.arpa 도메인을 사용하여 IPv4 및 IPv6 주소에 대한 역방향 DNS 조회를 처리하도록 구성됩니다.
+위의 내용을 보면 클러스터의 최상위 도메인 이름은 쿠버네티스 플러그인 구성에서 "cluster.local"로 지정되는 것을 확인할 수 있습니다. 플러그인은 in-addr.arpa 및 ip6.arpa 도메인을 사용하여 IPv4 및 IPv6 주소에 대한 역방향 DNS 조회를 처리하도록 구성됩니다.
 
 > 여기서 역방향 DNS 조회란 일반적으로 도메인 이름을 쿼리하여 IP 주소를 얻어내는 것이 아닌, 해당 IP 주소에 연결된 도메인 이름이 결과로 반환되는 DNS 쿼리입니다.
 > 더 자세한 내용은 Reference의 `역방향 DNS`를 참고해주세요.
@@ -119,7 +119,7 @@ Corefile과 구문에 대해 더 자세히 알아보려면 [CoreDNS 매뉴얼](h
 
 마찬가지로 Kubernetes의 Pod에서도 요청을 보내면 CoreDNS를 대상으로 Query를 보내고 주소를 가져와서 요청을 처리하게 됩니다.
 
-따라서 이해한 바에 따르면 `amazon.com`에 요청을 보내면 바로 주소를 가져와서 요청을 처리해야할 것입니다. 그런데 Pod에서 `curl amazon.com`을 실행한 뒤 CoreDNS의 로그를 보면 다음과 같은 로그를 보실 수 있습니다.
+따라서 이해한 바에 따르면 `amazon.com`에 요청을 보내면 바로 주소를 가져와서 요청을 처리해야 할 것입니다. 그런데 Pod에서 `curl amazon.com`을 실행한 뒤 CoreDNS의 로그를 보면 다음과 같은 로그를 보실 수 있습니다.
 
 ```bash
 [INFO] 10.29.101.97:49777 - 15626 "AAAA IN amazon.com.default.svc.cluster.local. udp 54 false 512" NXDOMAIN qr,aa,rd 147 0.000245472s
@@ -136,7 +136,7 @@ Corefile과 구문에 대해 더 자세히 알아보려면 [CoreDNS 매뉴얼](h
 
 로그를 보면 `amazon.com` 뿐만 아니라 `amazon.com.default.svc.cluster.local.`, `amazon.com.cluster.local` 등의 여러 도메인을 쿼리하는 것을 볼 수 있습니다.
 
-이렇게 동작하는 이유는 각 Pod에 설정된 `resolv.conf`를 보면 알 수 있습니다.
+이렇게 동작하는 이유는 각 Pod에 설정된 `resolv.conf`를 살펴보면 알 수 있습니다.
 
 ```bash
 $ kubectl exec -it <POD_NAME> -- cat /etc/resolv.conf
@@ -146,7 +146,7 @@ nameserver 172.20.0.10
 options ndots:5
 ```
 
-resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]의 내용을 참고하면 쿼리에 `.` 이 `ndots` 보다 적게 포함되어있을 경우(FQDN이 아닐경우), search에 있는 서치 도메인을 순서대로 붙여 매치될 때까지 진행하게 된다고 나와있습니다.
+resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]의 내용을 참고하면 쿼리에 `.` 이 `ndots` 보다 적게 포함되어 있을 경우(FQDN이 아닐 경우), search에 있는 서치 도메인을 순서대로 붙여 매치될 때까지 진행하게 된다고 나와있습니다.
 
 여기서 `ndots`는 쿼리 이름에 있는 점의 수를 FQDN(Fully Qualified Domain Name)으로 간주하는 임계값을 나타냅니다.
 
@@ -160,7 +160,7 @@ By default, the search list contains one entry, the local domain name.  It is de
 Resolver queries having fewer than ndots dots (default is 1) in them will be attempted using each component of the search path in turn until a match is found.
 ```
 
-따라서 `amazon.com` 이라는 도메인의 `.`의 수가 5보다 작으므로 FQDN이라고 판단되지 않아 `search` 리스트의 모든 검색을 진행하므로 위와 같은 로그가 찍힌 것입니다.
+따라서 `amazon.com`이라는 도메인의 `.`의 수가 5보다 적으므로 FQDN이라고 판단되지 않아 `search` 리스트의 모든 검색을 진행하므로 위와 같은 로그가 찍힌 것입니다.
 
 ### Query 성능 개선
 
@@ -170,7 +170,7 @@ Resolver queries having fewer than ndots dots (default is 1) in them will be att
 
 답은 간단합니다. 바로 FQDN 도메인으로 질의를 하도록 Application 단에서 FQDN 도메인을 사용하도록 하면 됩니다.
 
-즉 `curl amazon.com` 이 아닌 `curl amazon.com.` 으로 제일 뒤에 `.`을 붙여 FQDN으로 명시적으로 만들어주면 다음과 같이 한번에 Query가 성공하는 것을 볼 수 있습니다.
+즉 `curl amazon.com` 이 아닌 `curl amazon.com.` 으로 제일 뒤에 `.`을 붙여 FQDN으로 명시적으로 만들어주면 다음과 같이 한 번에 Query가 성공하는 것을 볼 수 있습니다.
 
 ```bash
 [INFO] 10.85.0.1:59724 - 59684 "A IN amazon.com. udp 28 false 512" NOERROR qr,rd,ra 106 0.002072165s
@@ -179,15 +179,15 @@ Resolver queries having fewer than ndots dots (default is 1) in them will be att
 
 ### 왜 이러한 설정이 되어있을까?
 
-이렇게 설정되어 있는 이유는 편의성 때문이며 같은 네임스페이스, 혹은 다른 네임스페이스에 있는 서비스를 도메인으로 접근할 때 FQDN이 아닌 짧고 간결한 도메인 명으로 접근할 수 있게 하기 위합입니다. [Namespaces of Services]
+이렇게 설정되어 있는 이유는 편의성 때문이며 같은 네임스페이스, 혹은 다른 네임스페이스에 있는 서비스를 도메인으로 접근할 때 FQDN이 아닌 짧고 간결한 도메인 명으로 접근할 수 있게 하기 위함입니다. [Namespaces of Services]
 
-이러한 설정 덕분에 우리는 매번 `<SERVICE_NAME>.default.svc.cluster.local` 와 같이 길게 쓸 필요없이 service 이름만으로 연결이 될 수 있는 것입니다.
+이러한 설정 덕분에 우리는 매번 `<SERVICE_NAME>.default.svc.cluster.local` 와 같이 길게 쓸 필요 없이 service 이름만으로 연결이 될 수 있는 것입니다.
 
 # 마치며
 
-이번에는 Kubernetes를 쓰면서 자주 보게되는 CoreDNS에 대해서 정리해 보았습니다.
+이번에는 Kubernetes를 쓰면서 자주 보게 되는 CoreDNS에 대해서 정리해 보았습니다.
 
-정리해 보면서 생각이든건데 다음에는 기회가 된다면 Kubernetes에서 자주 사용되는 컴포넌트나 어플리케이션에 대해서도 다뤄보도록 하겠습니다.
+정리해 보면서 생각이 든 건데 다음에는 기회가 된다면 Kubernetes에서 자주 사용되는 컴포넌트나 어플리케이션에 대해서도 다뤄보도록 하겠습니다.
 
 제가 정리한 부분들이 도움이 되었으면 하며 즐거운 데브옵스 되세요! :)
 

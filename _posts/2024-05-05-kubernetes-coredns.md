@@ -37,6 +37,11 @@ NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         
 kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   60m
 ```
 
+> 여기서 아직 coredns의 label이 `k8s-app=kube-dns`으로 되어있는데 이 이유에 대해서는 backwards compatibility를 위해서라고 예상됩니다.
+> 
+> 확실하지는 않으나 관련 논의를 참고링크[^labeled-as-kube-dns]에서 확인할 수 있습니다.
+{: .prompt-info }
+
 이러한 CoreDNS의 Service 주소는 Pod 생성시에 각 Pod의 `/etc/resolv.conf` 에 자동으로 설정되게 됩니다.
 
 ```bash
@@ -204,14 +209,15 @@ found.
 
 제가 정리한 부분들이 도움이 되었으면 하며 즐거운 데브옵스 되세요! :)
 
+> 본 글은 **Kubernetes의 DNS, CoreDNS를 알아보자[^ref-1]** 및 **k8s와 /etc/resolv.conf[^ref-2]**의 내용을 참고하였습니다.
+{: .prompt-info }
+
 # Reference
 
 [^dns-for-services-and-pods]: [DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
+[^labeled-as-kube-dns]: [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
+[^reverse-dns]: [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
 [^linux-manual-resolv-conf]: [linux manual - resolv.conf](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html)
 [^namespaces-of-services]: [Namespaces of Services](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#namespaces-of-services)
-[^reverse-dns]: [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
-
-- [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
-- [Kubernetes의 DNS, CoreDNS를 알아보자](https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/)
-- [k8s와 /etc/resolv.conf](https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/)
-- [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
+[^ref-1]: [Kubernetes의 DNS, CoreDNS를 알아보자](https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/)
+[^ref-2]: [k8s와 /etc/resolv.conf](https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/)

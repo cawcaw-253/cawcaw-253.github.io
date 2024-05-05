@@ -19,7 +19,7 @@ Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 
 
 이번에는 이 CoreDNS에 대해서 공부한 내용을 정리해 보도록 하겠습니다.
 
-# CoreDNS 기본 구성
+# CoreDNS 기본 동작
 
 우선 CoreDNS는 Pod로 실행되기에 Service를 통해 요청을 받게됩니다. 그래서 `kubeadm`으로  클러스터를 생성한 뒤 오브젝트를 확인해보면 다음과 같이 Pod와 Service가 있는 것을 확인할 수 있습니다.
 
@@ -46,13 +46,15 @@ nameserver 10.96.0.10
 options ndots:5
 ```
 
-따라서 Pod는 내부 외부 도메인이냐에 따라서 아래와 같이 CoreDNS에 쿼리를 보내고 동작을 하게됩니다.
+Pod는 이 설정에 따라서 CoreDNS에 쿼리를 보내게 되고, CoreDNS에서는 질의받은 도메인이 내부인지 외부인지에 따라서 아래와 같이 동작을 하게됩니다.
 
-![internal-coredns](posts/20240428/coredns.png)_ref : https://h-susu.tistory.com/13_
+- 내부 Query
+	![internal-coredns](posts/20240428/coredns.png)_ref : https://h-susu.tistory.com/13_
 
-![external-coredns](posts/20240428/coredns-external.png)_ref : https://h-susu.tistory.com/13_
+- 외부 Query
+	![external-coredns](posts/20240428/coredns-external.png)_ref : https://h-susu.tistory.com/13_
 
-# CoreDNS 상세
+# CoreDNS Deep Dive
 
 ## Corefile을 이용한 설정
 

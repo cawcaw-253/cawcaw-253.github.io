@@ -1,7 +1,7 @@
 ---
 title: "[Kubernetes Deep Dive] CoreDNS"
 author: cawcaw253
-date: 2023-05-05 17:32:00 +0900
+date: 2024-05-05 17:32:00 +0900
 categories:
   - Kubernetes
 tags:
@@ -16,14 +16,15 @@ published: true
 Kubernetes에서는 클러스터 내부의 Pod에서 도메인을 찾고자 할 때 외부 DNS 서버가 아닌 내부 DNS인 CoreDNS에 질의를 하게됩니다.
 
 > 기존에는 Kube-DNS가 이 역할을 했었습니다. 그러나 `1.12`버전부터 CoreDNS가 표준으로 채택되었고, 그 이후부터는 `kubeadm`으로 설치하는 경우 CoreDNS가 설치되고 있습니다.
+{: .prompt-tip }
 
-이번에는 이 CoreDNS에 대해서 공부한 내용을 정리해 보도록 하겠습니다.
+이번에는 이 CoreDNS에 대해서 공부한 내용을 정리해 보도록 하겠습니다. [^dns-for-services-and-pods]
 
 # CoreDNS 기본 동작
 
 우선 CoreDNS는 Pod로 실행되기에 Service를 통해 요청을 받게됩니다. 그래서 `kubeadm`으로  클러스터를 생성한 뒤 오브젝트를 확인해보면 다음과 같이 Pod와 Service가 있는 것을 확인할 수 있습니다.
 
-```
+```bash
 $ kubectl get po -n kube-system -l k8s-app=kube-dns
 
 NAME                       READY   STATUS    RESTARTS   AGE
@@ -36,9 +37,14 @@ NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         
 kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   60m
 ```
 
+> 여기서 아직 coredns의 label이 `k8s-app=kube-dns`으로 되어있는데 이 이유에 대해서는 backwards compatibility를 위해서라고 예상됩니다.
+> 
+> 확실하지는 않으나 관련 논의를 참고링크[^labeled-as-kube-dns]에서 확인할 수 있습니다.
+{: .prompt-info }
+
 이러한 CoreDNS의 Service 주소는 Pod 생성시에 각 Pod의 `/etc/resolv.conf` 에 자동으로 설정되게 됩니다.
 
-```
+```bash
 root@nginx:/# cat /etc/resolv.conf 
 
 search default.svc.cluster.local svc.cluster.local cluster.local kornet
@@ -99,21 +105,25 @@ Corefile은 ConfigMap 오브젝트를 통해서 확인할 수 있으며, 여러 
 위의 내용을 보면 클러스터의 최상위 도메인 이름은 쿠버네티스 플러그인 구성에서 "cluster.local"로 지정되는 것을 확인할 수 있습니다. 플러그인은 in-addr.arpa 및 ip6.arpa 도메인을 사용하여 IPv4 및 IPv6 주소에 대한 역방향 DNS 조회를 처리하도록 구성됩니다.
 
 > 여기서 역방향 DNS 조회란 일반적으로 도메인 이름을 쿼리하여 IP 주소를 얻어내는 것이 아닌, 해당 IP 주소에 연결된 도메인 이름이 결과로 반환되는 DNS 쿼리입니다.
-> 더 자세한 내용은 Reference의 "역방향 DNS"를 참고해주세요.
+> 
+> 대표적으로 이메일 서버에서 사용되며 인터넷의 많은 이메일 서버는 역방향 DNS가 없는 IP 주소에서 수신되는 이메일을 거부하도록 구성되어 있습니다.
+> 
+> 더 자세한 내용은 Reference의 **역방향 DNS**[^reverse-dns]를 참고해주세요.
+{: .prompt-info }
 
 여기서 기본적으로 설정되어있는 플러그인에 대해서 설명하자면 다음과 같습니다.
 
-- **errors** : 오류를 stdout에 기록합니다.
-- **health** : CoreDNS의 상태를 http://localhost:8080/health 를 통해 보고합니다. 이 확장 구문에서 lameduck은 프로세스가 종료되기 전에 unhealty 상태로 만들어 5초 동안 기다리게 해줍니다.
-- **ready** : 준비 상태를 알릴 수 있는 모든 플러그인이 준비 상태를 알린 경우 포트 8181의 HTTP 엔드포인트를 통해 200 OK를 반환합니다.
-- **kubernetes** : kubernetes의 서비스 및 파드의 IP를 기반으로 DNS 쿼리에 응답하게 합니다. ttl등의 설정을 통해 자세한 설정을 할 수 있습니다.
+- [errors](https://coredns.io/plugins/errors/) : 오류를 stdout에 기록합니다.
+- [health](https://coredns.io/plugins/health/) : CoreDNS의 상태를 http://localhost:8080/health 를 통해 보고합니다. 이 확장 구문에서 lameduck은 프로세스가 종료되기 전에 unhealty 상태로 만들어 5초 동안 기다리게 해줍니다.
+- [ready](https://coredns.io/plugins/ready/) : 준비 상태를 알릴 수 있는 모든 플러그인이 준비 상태를 알린 경우 포트 8181의 HTTP 엔드포인트를 통해 200 OK를 반환합니다.
+- [kubernetes](https://coredns.io/plugins/kubernetes/) : kubernetes의 서비스 및 파드의 IP를 기반으로 DNS 쿼리에 응답하게 합니다. ttl등의 설정을 통해 자세한 설정을 할 수 있습니다.
   이 플러그인에 대한 자세한 내용은 [CoreDNS 웹사이트](https://coredns.io/plugins/kubernetes/)에서 확인할 수 있습니다.
-- **cache** : 프론트엔드 캐시를 활성화합니다.  
-- **loop** : 단순 포워딩 루프를 감지하고 루프가 발견되면 CoreDNS 프로세스를 중지합니다.  
+- [cache](https://coredns.io/plugins/cache/) : 프론트엔드 캐시를 활성화합니다.  
+- [loop](https://coredns.io/plugins/loop/) : 단순 포워딩 루프를 감지하고 루프가 발견되면 CoreDNS 프로세스를 중지합니다.  
 
 Corefile과 구문에 대해 더 자세히 알아보려면 [CoreDNS 매뉴얼](https://coredns.io/manual/toc/) 또는 [CoreDNS ConfigMap 옵션](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#coredns-configmap-options)에서 제공되는 공식 문서를 참조해 주세요.
 
-## DNS Resolve
+## DNS Resolve
 
 일반적으로 호스트에서 특정 도메인으로 요청을 보내면 DNS로 IP주소를 가져와서 해당 주소로 요청을 보내게 됩니다.
 
@@ -146,18 +156,26 @@ nameserver 172.20.0.10
 options ndots:5
 ```
 
-resolv.conf에 대한 linux 매뉴얼[linux manual - resolv.conf]의 내용을 참고하면 쿼리에 `.` 이 `ndots` 보다 적게 포함되어 있을 경우(FQDN이 아닐 경우), search에 있는 서치 도메인을 순서대로 붙여 매치될 때까지 진행하게 된다고 나와있습니다.
+resolv.conf에 대한 linux 매뉴얼[^linux-manual-resolv-conf]의 내용을 참고하면 쿼리에 `.` 이 `ndots` 보다 적게 포함되어 있을 경우(FQDN이 아닐 경우), search에 있는 서치 도메인을 순서대로 붙여 매치될 때까지 진행하게 된다고 나와있습니다.
 
 여기서 `ndots`는 쿼리 이름에 있는 점의 수를 FQDN(Fully Qualified Domain Name)으로 간주하는 임계값을 나타냅니다.
 
 ```
 # Search list for host-name lookup.
 
-By default, the search list contains one entry, the local domain name.  It is determined from the local hostname returned by gethostname(2); the local domain name is taken to be everything after the first '.'.  Finally, if the hostname does not contain a '.', the root domain is assumed as the local domain name.
+By default, the search list contains one entry, the local
+domain name.  It is determined from the local hostname
+returned by gethostname(2); the local domain name is taken
+to be everything after the first '.'.  Finally, if the
+hostname does not contain a '.', the root domain is
+assumed as the local domain name.
 
 ...
 
-Resolver queries having fewer than ndots dots (default is 1) in them will be attempted using each component of the search path in turn until a match is found.
+Resolver queries having fewer than
+ndots dots (default is 1) in them will be attempted using
+each component of the search path in turn until a match is
+found.
 ```
 
 따라서 `amazon.com`이라는 도메인의 `.`의 수가 5보다 적으므로 FQDN이라고 판단되지 않아 `search` 리스트의 모든 검색을 진행하므로 위와 같은 로그가 찍힌 것입니다.
@@ -179,7 +197,7 @@ Resolver queries having fewer than ndots dots (default is 1) in them will be att
 
 ### 왜 이러한 설정이 되어있을까?
 
-이렇게 설정되어 있는 이유는 편의성 때문이며 같은 네임스페이스, 혹은 다른 네임스페이스에 있는 서비스를 도메인으로 접근할 때 FQDN이 아닌 짧고 간결한 도메인 명으로 접근할 수 있게 하기 위함입니다. [Namespaces of Services]
+이렇게 설정되어 있는 이유는 편의성 때문이며 같은 네임스페이스, 혹은 다른 네임스페이스에 있는 서비스를 도메인으로 접근할 때 FQDN이 아닌 짧고 간결한 도메인 명으로 접근할 수 있게 하기 위함입니다.[^namespaces-of-services]
 
 이러한 설정 덕분에 우리는 매번 `<SERVICE_NAME>.default.svc.cluster.local` 와 같이 길게 쓸 필요 없이 service 이름만으로 연결이 될 수 있는 것입니다.
 
@@ -191,11 +209,15 @@ Resolver queries having fewer than ndots dots (default is 1) in them will be att
 
 제가 정리한 부분들이 도움이 되었으면 하며 즐거운 데브옵스 되세요! :)
 
+> 본 글은 **Kubernetes의 DNS, CoreDNS를 알아보자[^ref-1]** 및 **k8s와 /etc/resolv.conf[^ref-2]**의 내용을 참고하였습니다.
+{: .prompt-info }
+
 # Reference
-- [DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
-- [linux manual - resolv.conf](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html)
-- [Namespaces of Services](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#namespaces-of-services)
-- [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
-- [Kubernetes의 DNS, CoreDNS를 알아보자](https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/)
-- [k8s와 /etc/resolv.conf](https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/)
-- [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
+
+[^dns-for-services-and-pods]: [DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
+[^labeled-as-kube-dns]: [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
+[^reverse-dns]: [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
+[^linux-manual-resolv-conf]: [linux manual - resolv.conf](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html)
+[^namespaces-of-services]: [Namespaces of Services](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#namespaces-of-services)
+[^ref-1]: [Kubernetes의 DNS, CoreDNS를 알아보자](https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/)
+[^ref-2]: [k8s와 /etc/resolv.conf](https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/)

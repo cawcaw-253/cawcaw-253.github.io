@@ -2,8 +2,15 @@
 title: ! '컨테이너란 무엇인가'
 author: cawcaw253
 date: 2022-12-15 20:13:00 +0900
-categories: [Container, Docker]
-tags: [container]
+categories:
+  - Container
+  - Docker
+tags:
+  - container
+  - docker
+description: |
+  컨테이너란 무엇인가에 대해서 기존 VM과의 차이점, 컨테이너만의 특징 등을 정리했습니다. 실제 도커 컨테이너를 이용해서 실제로 그렇게 동작하는지 테스트하는 과정도 포함되어 있습니다. 
+published: true
 ---
 
 ---

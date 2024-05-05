@@ -13,6 +13,9 @@ tags:
   - node
   - heartbeat
   - lease
+description: |
+  Kubernetes의 Node Health Check에 사용되는 Lease에 대해 Deep Dive하여 공부한 내용을 정리했습니다. Node의 kubelet이 어떻게 Heartbeat 동작을 하는지 이 과정에서 Lease 오브젝트가 어떻게 사용되는지에 대한 내용이 포함되어 있습니다.
+published: true
 ---
 ---
 # 개요

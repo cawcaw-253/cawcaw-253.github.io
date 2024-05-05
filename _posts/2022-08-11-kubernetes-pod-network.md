@@ -2,8 +2,16 @@
 title: ! '[Kubernetes Deep Dive] 쿠버네티스 네트워크'
 author: cawcaw253
 date: 2022-08-11 21:55:00 +0900
-categories: [Kubernetes]
-tags: [kubernetes, network, deep-dive]
+categories:
+  - Kubernetes
+  - Network
+tags:
+  - kubernetes
+  - network
+  - deep-dive
+description: |
+  Kubernetes에서 어떻게 파드 간의 통신이 이루어지는지, 외부에서 접속했을 때는 어떻게 파드로 전달되는지 등에 대해서 CNI 및 네트워크 모델등에 대한 내용과 함께 정리한 글입니다.
+published: true
 ---
 
 ---

@@ -2,8 +2,13 @@
 title: ! 'Git 브랜치 전략 (git workflow)'
 author: cawcaw253
 date: 2022-07-26 20:34:00 +0900
-categories: [Git]
-tags: [git]
+categories:
+  - Git
+tags:
+  - git
+description: |
+  Git을 사용하면서 어떻게 Branch를 관리하는지에 대해서 대표적인 방법론인 Git Flow, GitHub Flow, GitLab Flow에 대해서 설명하고 각각 어떠한 컨셉인가에 대해서 정리한 글입니다.
+published: true
 ---
 
 ---

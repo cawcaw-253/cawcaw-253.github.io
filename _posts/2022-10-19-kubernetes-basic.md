@@ -2,8 +2,15 @@
 title: ! '[Kubernetes Basic] 쿠버네티스란?'
 author: cawcaw253
 date: 2022-10-19 22:26:00 +0900
-categories: [Kubernetes]
-tags: [devops, kubernetes, basic]
+categories:
+  - Kubernetes
+tags:
+  - devops
+  - kubernetes
+  - basic
+description: |
+  요즘 많이 주목받으며 사용되고 있는 Kubernetes란 무엇인가? 기존에 사용되던 전통적인 방식에서 가상화, 그리고 컨테이너로 넘어온 과정과 각각의 특징에 대해서 정리하고 Kubernetes가 무엇이며 왜 필요하게 되었는지를 설명한 글입니다. 
+published: true
 ---
 
 ---

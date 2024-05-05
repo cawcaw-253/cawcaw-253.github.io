@@ -7,6 +7,8 @@ categories:
 tags:
   - kubernetes
   - coredns
+description: |
+  Kubernetes CoreDNS에 대한 기본 및 Deep Dive 한 내용을 정리했습니다. CoreDNS의 기본 동작 및 Corefile, ndots, FQDN 등 CoreDNS 사용 중 쉽게 접할 수 있는 내용 및 Query 성능 향상에 대한 내용이 포함되어 있습니다.
 published: true
 ---
 

@@ -2,8 +2,17 @@
 title: ! 'Terraform vs Ansible 무엇을 사용할까?'
 author: cawcaw253
 date: 2022-09-11 21:38:00 +0900
-categories: [DevOps, Infrastructure as code]
-tags: [devops, infrastructure as code]
+categories:
+  - DevOps
+  - Infrastructure as code
+  - IaC
+tags:
+  - devops
+  - infrastructure as code
+  - iac
+description: |
+  DevOps에서 주로 사용되는 자동화툴인 Terraform과 Ansible에 대해 각각의 특징에 대해서 정리하고 어떤 상황에서 무엇을 쓰면 좋은지에 대해서 간략하게 정리한 글입니다.
+published: true
 ---
 
 ---
@@ -18,7 +27,6 @@ tags: [devops, infrastructure as code]
 
 > HashiCorp Terraform은 버전을 지정하고 재사용하고 공유할 수 있는 사람이 읽을 수 있는 구성 파일에서 클라우드 및 온프레미스 리소스를 모두 정의할 수 있는 코드형 인프라 도구입니다. 그런 다음 일관된 워크플로를 사용하여 수명 주기 동안 모든 인프라를 프로비저닝하고 관리할 수 있습니다. Terraform은 컴퓨팅, 스토리지 및 네트워킹 리소스와 같은 하위 수준 구성 요소는 물론 DNS 항목 및 SaaS 기능과 같은 상위 수준 구성 요소를 관리할 수 있습니다.
 > 
-> 
 > refer to : [https://www.terraform.io/intro](https://www.terraform.io/intro)
 > 
 
@@ -29,7 +37,6 @@ Terraform은 Infrastructure Orchestration tool입니다. 비유를 들어 설명
 ## Ansible
 
 > Ansible®은 오픈소스 IT 자동화 툴로서, 프로비저닝, 구성 관리, 애플리케이션 배포, 오케스트레이션, 기타 여러 가지 수동 IT 프로세스를 자동화합니다. 더 단순한 관리 툴과 달리 Ansible 사용자(예: 시스템 관리자, 개발자, 아키텍트)는 Ansible 자동화를 사용해 소프트웨어를 설치하고, 일상적인 태스크를 자동화하고, 인프라를 프로비저닝하고, 보안 및 컴플라이언스를 개선하고, 시스템에 패치를 적용하고, 조직 전체에 자동화를 공유할 수 있습니다.
-> 
 > 
 > refer to : [https://www.redhat.com/ko/technologies/management/ansible/what-is-ansible](https://www.redhat.com/ko/technologies/management/ansible/what-is-ansible)
 > 

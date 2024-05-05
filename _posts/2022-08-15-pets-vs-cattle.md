@@ -2,8 +2,15 @@
 title: ! 'DevOps 콘셉트: Pets vs Cattle'
 author: cawcaw253
 date: 2022-08-15 18:23:00 +0900
-categories: [DevOps, Infrastructure]
-tags: [devops, infrastructure]
+categories:
+  - DevOps
+  - Infrastructure
+tags:
+  - devops
+  - infrastructure
+description: |
+  클라우드 컴퓨팅 기술의 발전 및 DevOps라는 문화가 대두되면서 나타나게 된 개념인 Pets vs Cattle에 대한 내용인 Mutable Infrastructure, Immutable Infrastructure에 대해서 정리한 글입니다.
+published: true
 ---
 
 ---

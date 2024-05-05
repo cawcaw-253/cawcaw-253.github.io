@@ -2,8 +2,16 @@
 title: ! '[AWS] DNS 변경을 이용한 다운타임 없는 인프라 마이그레이션'
 author: cawcaw253
 date: 2022-11-20 20:13:00 +0900
-categories: [AWS]
-tags: [aws]
+categories:
+  - AWS
+  - Infrastructure
+tags:
+  - aws
+  - infrastructure
+  - dns
+description: |
+  프로젝트를 진행하다 보면 한 계정에서 다른 aws 계정으로 이동하거나 도메인 밑의 인프라 전체를 새롭게 교체해야 되는 경우가 발생할 수 있습니다. 이런 상황에서 어떤 방식으로 현재 동작하고 있는 서비스를 옮길 수 있는지 저의 경험을 토대로 설명해 보고자 합니다.
+published: true
 ---
 
 ---

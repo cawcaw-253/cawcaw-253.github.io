@@ -10,6 +10,9 @@ tags:
   - network
   - deep-dive
   - service
+description: |
+  Kubernetes에서 필수적으로 사용되는 kube proxy가 어떤 이유에서 필요하고 어떻게 사용되는가 및 동작 방식 대한 내용을 중점적으로 작성했습니다.
+published: true
 ---
 
 ---

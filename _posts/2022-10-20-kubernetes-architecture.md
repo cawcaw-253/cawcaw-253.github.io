@@ -2,8 +2,15 @@
 title: ! '[Kubernetes Basic] 쿠버네티스의 아키텍처'
 author: cawcaw253
 date: 2022-10-20 21:24:00 +0900
-categories: [Kubernetes]
-tags: [devops, kubernetes, basic]
+categories:
+  - Kubernetes
+tags:
+  - devops
+  - kubernetes
+  - basic
+description: |
+  요즘 많이 주목받으며 사용되고 있는 Kubernetes에 대해 전반적인 구조와 해당 구조에서 각 요소들이 어떤 역할들을 하고 있는가에 대해서 정리했습니다.
+published: true
 ---
 
 ---

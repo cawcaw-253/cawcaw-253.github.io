@@ -13,6 +13,9 @@ tags:
   - volume
   - csi
   - csi-driver
+description: |
+  Kubernetes에서 csi-driver가 실제로 어떻게 구성되고 동작하는가에 대해서 내용을 정리했습니다. 전반적인 Container Storage Interface 메커니즘에 대해서 설명이 포함되어 있습니다.
+published: true
 ---
 ---
 # 개요

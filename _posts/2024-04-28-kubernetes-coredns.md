@@ -36,7 +36,7 @@ NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         
 kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   60m
 ```
 
-이러한 CoreDNS의 Service 주소는 Pod 생성시에 자동으로 `/etc/resolv.conf`에 설정되게 됩니다.
+이러한 CoreDNS의 Service 주소는 Pod 생성시에 각 Pod의 `/etc/resolv.conf` 에 자동으로 설정되게 됩니다.
 
 ```
 root@nginx:/# cat /etc/resolv.conf 
@@ -48,9 +48,9 @@ options ndots:5
 
 따라서 Pod는 내부 외부 도메인이냐에 따라서 아래와 같이 CoreDNS에 쿼리를 보내고 동작을 하게됩니다.
 
-![internal-coredns](posts/20240428/coredns.png)
+![internal-coredns](posts/20240428/coredns.png)_ref : https://h-susu.tistory.com/13_
 
-![external-coredns](posts/20240428/coredns-external.png)
+![external-coredns](posts/20240428/coredns-external.png)_ref : https://h-susu.tistory.com/13_
 
 # CoreDNS 상세
 
@@ -183,17 +183,17 @@ Resolver queries having fewer than ndots dots (default is 1) in them will be att
 
 # 마치며
 
+이번에는 Kubernetes를 쓰면서 자주 보게되는 CoreDNS에 대해서 정리해 보았습니다.
 
+정리해 보면서 생각이든건데 다음에는 기회가 된다면 Kubernetes에서 자주 사용되는 컴포넌트나 어플리케이션에 대해서도 다뤄보도록 하겠습니다.
+
+제가 정리한 부분들이 도움이 되었으면 하며 즐거운 데브옵스 되세요! :)
 
 # Reference
-- [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
-- https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/
-- https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
-- https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/
-- [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
+- [DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
 - [linux manual - resolv.conf](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html)
 - [Namespaces of Services](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#namespaces-of-services)
-
-
-이미지 출처
-https://h-susu.tistory.com/13
+- [coresdns is still labeled as kube-dns](https://github.com/coredns/deployment/issues/116)
+- [Kubernetes의 DNS, CoreDNS를 알아보자](https://jonnung.dev/kubernetes/2020/05/11/kubernetes-dns-about-coredns/)
+- [k8s와 /etc/resolv.conf](https://cprayer.github.io/posts/k8s-and-etc-resolv-conf/)
+- [역방향 DNS](https://powerdmarc.com/ko/what-are-reverse-dns-records/)
